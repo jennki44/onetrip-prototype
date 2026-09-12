@@ -160,6 +160,7 @@ function renderNav() {
     ${DESK_NAV.map(([id, ic, l]) => `<button class="nav ${isNavOn(id) ? 'on' : ''}" onclick="go('${id}')"><span class="ic">${ic}</span>${l}${id === 'decisions' && open ? `<span class="badge">${open}</span>` : ''}${id === 'settings' && unread ? `<span class="badge">${unread}</span>` : ''}</button>`).join('')}
     <button class="fab add" onclick="openAdd()"><span>+</span> Add to trip</button>
     <button class="nav" onclick="go('travel')"><span class="ic">🧭</span>Travel Mode</button>
+    <button class="nav ${route.name === 'feedback' ? 'on' : ''}" onclick="go('feedback')"><span class="ic">💬</span>Give feedback</button>
     <div class="foot">Signed in as ${me().name} · Owner<br>Reporting in ${S.reporting}</div>`;
   sb.style.display = onboarding && isDesktop() ? 'none' : '';
   const tb = $('#desktop-topbar');
@@ -217,6 +218,7 @@ SCREENS.welcome = () => h`
       <button class="btn primary lg block" onclick="go('create',{step:1})">Create a trip</button>
       <button class="btn outline lg block" onclick="go('join')">Join a trip</button>
       <p class="center tiny mt8">Already have an account? <button class="link" onclick="go('signin')">Sign in</button> · <button class="link" onclick="go('home')">Open the demo trip</button></p>
+      <p class="center tiny">Testing this for Jennie? <button class="link" onclick="go('feedback')">Start with the tasks ›</button></p>
     </div>
   </div>`;
 function welcomeArt() {

@@ -538,7 +538,7 @@ SCREENS.travel = () => { const cur = currentItem(), nxt = nextItem(); const afte
 
 /* ----- More, notifications, history, documents, bookings, travellers, permissions, memories, settings ----- */
 SCREENS.more = () => { const unread = S.notifications.filter(n => n.unread).length; const open = S.decisions.filter(d => d.status !== 'confirmed').length;
-  const rows = [['🗳️', 'Decisions', open ? plural(open, 'open decision') : 'All decided', 'decisions', open], ['✨', 'Trip Brain', 'Ask anything about the trip', 'brain'], ['🩺', 'Trip Health', healthOverall().label, 'health'], ['📥', 'Trip Inbox', 'Drop anything, OneTRIP organises it', 'inbox'], ['🔔', 'Notifications', unread ? unread + ' unread' : 'Up to date', 'notifications', unread], ['🎟️', 'Bookings', plural(S.bookings.length, 'booking'), 'bookings'], ['📄', 'Documents', plural(S.documents.length, 'file'), 'documents'], ['👥', 'Travellers', plural(S.people.length, 'traveller'), 'travellers'], ['🕘', 'Activity history', 'Who changed what', 'history'], ['📸', 'Memories', 'After the trip', 'memories'], ['🧭', 'Travel Mode', 'Big, simple, on the go', 'travel'], ['⚙️', 'Settings', 'Currency, permissions, trip', 'settings']];
+  const rows = [['🗳️', 'Decisions', open ? plural(open, 'open decision') : 'All decided', 'decisions', open], ['✨', 'Trip Brain', 'Ask anything about the trip', 'brain'], ['🩺', 'Trip Health', healthOverall().label, 'health'], ['📥', 'Trip Inbox', 'Drop anything, OneTRIP organises it', 'inbox'], ['🔔', 'Notifications', unread ? unread + ' unread' : 'Up to date', 'notifications', unread], ['🎟️', 'Bookings', plural(S.bookings.length, 'booking'), 'bookings'], ['📄', 'Documents', plural(S.documents.length, 'file'), 'documents'], ['👥', 'Travellers', plural(S.people.length, 'traveller'), 'travellers'], ['🕘', 'Activity history', 'Who changed what', 'history'], ['📸', 'Memories', 'After the trip', 'memories'], ['🧭', 'Travel Mode', 'Big, simple, on the go', 'travel'], ['⚙️', 'Settings', 'Currency, permissions, trip', 'settings'], ['💬', 'Give feedback', 'Tell Jennie what you think', 'feedback']];
   return h`<div class="screen">${pageHead('More', `${S.trip.emoji} ${esc(S.trip.name)} · ${fmtRange()}`)}<div class="list">${rows.map(([e, t, s, r, b]) => `<button class="item tap" onclick="go('${r}')"><span class="ic">${e}</span><div class="body"><div class="title">${t}</div><div class="meta">${s}</div></div>${b ? `<span class="badge">${b}</span>` : ''}<span class="chev">›</span></button>`).join('')}</div>
   <button class="btn block mt16" onclick="go('welcome')">Switch trip / sign out</button></div>`; };
 SCREENS.notifications = () => h`<div class="screen" style="max-width:600px">${pageHead('Notifications', 'Only things worth knowing.', `<button class="btn sm" onclick="S.notifications.forEach(n=>n.unread=false);render()">Mark all read</button>`)}
@@ -583,6 +583,35 @@ SCREENS.settings = () => h`<div class="screen" style="max-width:600px">${pageHea
   <div class="item" style="flex-direction:column;align-items:stretch"><div class="row"><span class="ic">🎨</span><div class="body"><div class="title">Look</div><div class="meta">Pick the mood. Data and layout stay the same.</div></div></div><div class="mt12">${lookPicker()}</div></div>
   <div class="item"><span class="ic">🌙</span><div class="body"><div class="title">Appearance</div><div class="meta">Follows your device</div></div><div class="seg"><button class="${!document.documentElement.dataset.theme ? 'on' : ''}" onclick="delete document.documentElement.dataset.theme;syncDark();render()">Auto</button><button class="${document.documentElement.dataset.theme === 'light' ? 'on' : ''}" onclick="document.documentElement.dataset.theme='light';syncDark();render()">Light</button><button class="${document.documentElement.dataset.theme === 'dark' ? 'on' : ''}" onclick="document.documentElement.dataset.theme='dark';syncDark();render()">Dark</button></div></div></div>
   <div class="section"><div class="eyebrow">Trip</div><div class="list"><button class="item tap" onclick="go('invite')"><span class="ic">🔗</span><div class="body"><div class="title">Invite link & code</div><div class="meta">${S.trip.link}</div></div><span class="chev">›</span></button><button class="item tap" onclick="go('welcome')"><span class="ic">🚪</span><div class="body"><div class="title">Leave trip / sign out</div></div><span class="chev">›</span></button></div></div></div>`;
+
+
+/* ----- Tester feedback (prototype only) ----- */
+const FEEDBACK_TO = 'jennki38@gmail.com';
+const TASKS = [
+  ['🗳', 'Vote for Saturday dinner', 'Find the group decision and vote for the place you like.'],
+  ['💴', 'Find out how much the group has spent', 'And who owes whom.'],
+  ['🧾', 'Add the lunch receipt', 'Scan it, check the numbers, split it, save it.'],
+];
+SCREENS.feedback = () => h`<div class="screen" style="max-width:560px">${pageHead('Give feedback', 'Three tasks, three questions. Takes about five minutes.')}
+  <div class="eyebrow mb8">Try these first</div>
+  <div class="list mb16">${TASKS.map(([e, t, s]) => `<div class="item"><span class="ic">${e}</span><div class="body"><div class="title">${t}</div><div class="meta">${s}</div></div></div>`).join('')}</div>
+  <div class="stack">
+    <div class="field"><label>Your name</label><input class="input" id="fb-name" placeholder="So I know who to thank"></div>
+    <div class="field"><label>1 · In your own words, what is this app for?</label><textarea class="input" id="fb-q1" placeholder="One or two sentences"></textarea></div>
+    <div class="field"><label>2 · Where did you get stuck or feel unsure?</label><textarea class="input" id="fb-q2" placeholder="Which screen, what you expected"></textarea></div>
+    <div class="field"><label>3 · What did you tap that did nothing, or want that wasn't there?</label><textarea class="input" id="fb-q3" placeholder="Anything at all"></textarea></div>
+    <div class="field"><label>Would you use this with your own travel group?</label><div class="row wrap" id="fb-use">${['Definitely', 'Probably', 'Not sure', 'No'].map(o => `<button class="chip" data-v="${o}" onclick="[...this.parentElement.children].forEach(c=>c.classList.remove('on'));this.classList.add('on')">${o}</button>`).join('')}</div></div>
+    <button class="btn primary lg block" onclick="sendFeedback()">Send feedback</button>
+    <p class="tiny center">Opens your email app with the answers filled in. Nothing is sent until you press send there.</p>
+  </div></div>`;
+function sendFeedback() {
+  const v = id => ($('#' + id).value || '').trim();
+  const use = ($('#fb-use .on') || {}).dataset ? $('#fb-use .on').dataset.v : '';
+  if (!v('fb-q1') && !v('fb-q2') && !v('fb-q3')) { toast('Write at least one answer first'); return; }
+  const body = [`Name: ${v('fb-name')}`, `Look: ${look} · Layout: ${isDesktop() ? 'desktop' : 'phone'}`, '', `1. What is this app for?`, v('fb-q1'), '', `2. Where did you get stuck?`, v('fb-q2'), '', `3. Tapped that did nothing / wanted:`, v('fb-q3'), '', `Would use it: ${use}`].join('\n');
+  window.location.href = `mailto:${FEEDBACK_TO}?subject=${encodeURIComponent('OneTRIP prototype feedback')}&body=${encodeURIComponent(body)}`;
+  toast('Thank you!', 'Your email app should open now');
+}
 
 /* ---------- Demo flow shortcuts (desktop bar) ---------- */
 const FLOWS = [['A · Create', () => go('welcome')], ['B · Decide', () => { mapSel = 'sushihouse'; go('map', { focus: 'sushihouse' }); }], ['C · Receipt', () => go('scan')], ['D · Brain', () => go('brain')], ['E · Health', () => go('health')], ['F · Travel', () => go('travel')], ['G · Inbox', () => go('inbox')], ['H · Settle', () => go('money', { tab: 'balances' })]];
