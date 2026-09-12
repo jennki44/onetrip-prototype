@@ -34,7 +34,7 @@ const en = {
     needsVote: "Needs your vote", voted: "{n} / {total} voted", leading: "Leading",
   },
   today: { now: "Now", next: "Next", later: "Later", tonight: "Tonight", free: "Free until {time}", nothing: "Nothing scheduled right now.", tripMoney: "Trip money", youSpent: "You have spent", action: "Action needed", vote: "Vote for {title}." },
-  plan: { title: "Plan", sub: "Itinerary and calendar — everyone edits the same one.", timeline: "Timeline", calendar: "Calendar", addActivity: "+ Activity", plans: "{n} plans", stay: "Stay", driving: "Driving", noPlans: "Nothing planned for {day}", noPlansSub: "Add an activity or ask Trip Brain for ideas.", travel: "{n} min", drive: "Drive {t}", conflict: "arrives late" },
+  plan: { title: "Plan", sub: "Itinerary and calendar — everyone edits the same one.", timeline: "Timeline", calendar: "Calendar", addActivity: "+ Activity", plans: "{n} plans", stay: "Stay", driving: "Driving", noPlans: "Nothing planned for {day}", noPlansSub: "Add an activity or ask Trip Brain for ideas.", travel: "{n} min", drive: "Drive {t}", hrs: "{h} hr {m}", conflict: "arrives late" },
   item: { who: "Who's going", connected: "Connected to this plan", nothingLinked: "Nothing linked yet. Bookings, receipts and votes will show up here.", addReceipt: "Add receipt", map: "Map", bookingMissing: "Booking missing", dropConfirmation: "Drop a confirmation into Trip Inbox", resolve: "Resolve", fromPrevious: "{n} min from the previous stop" },
   status: { idea: "Idea", proposed: "Proposed", voting: "Voting", confirmed: "Confirmed", cancelled: "Cancelled", completed: "Done", booked: "Booked", notBooked: "Not booked" },
   decisions: {
@@ -126,7 +126,7 @@ const zhHant: Dictionary = {
     needsVote: "等你投票", voted: "{n} / {total} 已投票", leading: "領先",
   },
   today: { now: "而家", next: "下一站", later: "之後", tonight: "今晚", free: "自由時間至 {time}", nothing: "而家冇安排。", tripMoney: "行程使費", youSpent: "已經使咗", action: "要處理", vote: "為「{title}」投票。" },
-  plan: { title: "行程", sub: "行程表同月曆 — 大家編輯同一份。", timeline: "時間線", calendar: "月曆", addActivity: "+ 活動", plans: "{n} 個安排", stay: "住宿", driving: "駕車", noPlans: "{day} 未有安排", noPlansSub: "加個活動，或者問下 Trip Brain 有咩建議。", travel: "{n} 分鐘", drive: "車程 {t}", conflict: "會遲到" },
+  plan: { title: "行程", sub: "行程表同月曆 — 大家編輯同一份。", timeline: "時間線", calendar: "月曆", addActivity: "+ 活動", plans: "{n} 個安排", stay: "住宿", driving: "駕車", noPlans: "{day} 未有安排", noPlansSub: "加個活動，或者問下 Trip Brain 有咩建議。", travel: "{n} 分鐘", drive: "車程 {t}", hrs: "{h} 小時 {m}", conflict: "會遲到" },
   item: { who: "邊個去", connected: "同呢個安排有關", nothingLinked: "未有連結。預訂、收據同投票會喺度顯示。", addReceipt: "加收據", map: "地圖", bookingMissing: "未有預訂", dropConfirmation: "將確認信放入行程收件箱", resolve: "處理", fromPrevious: "由上一站 {n} 分鐘" },
   status: { idea: "構思", proposed: "提議", voting: "投票中", confirmed: "已確認", cancelled: "已取消", completed: "完成", booked: "已預訂", notBooked: "未預訂" },
   decisions: {
