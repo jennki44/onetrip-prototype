@@ -560,6 +560,27 @@ kbd.code { font-family: var(--font-mono); font-size: 20px; letter-spacing: .12em
 .look.on { border-color: var(--accent); color: var(--accent-text); }
 .look .sw { width: 100%; height: 34px; border-radius: 8px; display: flex; overflow: hidden; }
 .look .sw i { flex: 1; }
+
+/* Photos */
+.thumb { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; flex-shrink: 0; display: block; }
+.thumb.lg { width: 64px; height: 64px; border-radius: 14px; }
+.tl-card .e { width: 44px; }
+.hero-img { width: 100%; height: 190px; object-fit: cover; border-radius: var(--r); display: block; }
+#app.desktop .hero-img { height: 240px; }
+.daybanner { position: relative; border-radius: var(--r-lg); overflow: hidden; min-height: 150px; }
+.daybanner img { width: 100%; height: 170px; object-fit: cover; display: block; }
+.daybanner .ov { position: absolute; left: 0; right: 0; bottom: 0; padding: 40px 16px 14px; color: #fff; background: linear-gradient(to top, rgba(10,16,20,.82), rgba(10,16,20,0)); }
+.daybanner .ov .eyebrow, .daybanner .ov .tiny { color: rgba(255,255,255,.85); }
+.daybanner .ov .h3 { color: #fff; font-size: 18px; }
+.artphoto { position: relative; width: 100%; max-width: 420px; border-radius: 22px; overflow: hidden; box-shadow: var(--shadow-lg); }
+.artphoto img { width: 100%; height: 230px; object-fit: cover; display: block; }
+.artphoto .ov { position: absolute; background: var(--surface); border-radius: 12px; padding: 8px 12px; box-shadow: var(--shadow); }
+.artphoto .ov1 { left: 12px; bottom: 14px; width: 190px; }
+.artphoto .ov2 { right: 12px; top: 14px; }
+.artphoto .ov3 { right: 12px; bottom: 14px; padding: 6px 10px; }
+.polaroid { background-size: cover; background-position: center; }
+.polaroid span { background: rgba(10,16,20,.55); padding: 3px 7px; border-radius: 6px; backdrop-filter: blur(4px); }
+.item .thumb { width: 40px; height: 40px; border-radius: 12px; }
 </style>
 
 <div id="demobar">
@@ -582,6 +603,6 @@ kbd.code { font-family: var(--font-mono); font-size: 20px; letter-spacing: .12em
   <div id="toast"></div>
 </div>
 
-<script src="data.js?v=4"></script>
-<script src="app.js?v=4"></script>
-<script src="screens.js?v=4"></script>
+<script src="data.js?v=5"></script>
+<script src="app.js?v=5"></script>
+<script src="screens.js?v=5"></script>
