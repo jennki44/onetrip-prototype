@@ -1,0 +1,35 @@
+"use client";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { useT } from "@/lib/i18n/provider";
+import { supabaseBrowser } from "@/lib/supabase/client";
+import { addBookingFromInbox, registerDocument } from "@/app/t/[tripId]/inbox/actions";
+
+const CATS = ["Flights", "Hotels", "Transport", "Activities", "Insurance", "Receipts", "Other"];
+
+export function InboxDrop({ tripId, forItem, bookings }: { tripId: string; forItem: { id: string; title: string; day: number } | null; bookings: { id: string; title: string }[] }) {
+  const { t } = useT(); const router = useRouter(); const [pending, start] = useTransition();
+  const [file, setFile] = useState<File | null>(null); const [cat, setCat] = useState(forItem ? "Activities" : "Other"); const [asBooking, setAsBooking] = useState(!!forItem); const [linkBooking, setLinkBooking] = useState(""); const [err, setErr] = useState<string | null>(null);
+  const [bk, setBk] = useState({ title: forItem ? forItem.title : "", provider: "", reference: "", cost: "" });
+  const submit = () => start(async () => {
+    setErr(null);
+    try {
+      let path: string | null = null;
+      if (file) { if (file.size > 15 * 1024 * 1024) throw new Error("Files must be under 15 MB."); const key = `${tripId}/${crypto.randomUUID()}-${file.name.replace(/[^\w.\-]/g, "_")}`; const { error } = await supabaseBrowser().storage.from("documents").upload(key, file, { contentType: file.type || "application/octet-stream" }); if (error) throw error; path = key; }
+      if (asBooking) await addBookingFromInbox({ tripId, title: bk.title, provider: bk.provider, reference: bk.reference, cost: bk.cost, itemId: forItem?.id || null, category: cat, fileName: file?.name || null, storagePath: path, sizeBytes: file?.size || null });
+      else await registerDocument({ tripId, fileName: file?.name || "Untitled", storagePath: path, sizeBytes: file?.size || null, category: cat, linkedBookingId: linkBooking || null });
+      router.push(forItem ? `/t/${tripId}/plan/${forItem.id}` : `/t/${tripId}/documents`);
+    } catch (e) { setErr(e instanceof Error ? e.message : t("errors.generic")); }
+  });
+  return (
+    <div className="flex flex-col gap-3">
+      <label className="flex cursor-pointer flex-col items-center gap-1.5 rounded-[22px] border-2 border-dashed border-line bg-surface px-4 py-8 text-center"><span className="text-[36px]">📥</span><span className="font-bold">{file ? file.name : "Photo · PDF · screenshot · email export"}</span><span className="text-[12.5px] text-ink-3">{file ? `${Math.round(file.size / 1024)} KB` : "Tap to choose a file (optional)"}</span><input type="file" className="hidden" accept="image/*,application/pdf,.eml,.txt" onChange={e => setFile(e.target.files?.[0] || null)} /></label>
+      <div className="flex gap-1.5 overflow-x-auto [scrollbar-width:none]">{CATS.map(c => <button key={c} type="button" onClick={() => setCat(c)} className={`shrink-0 rounded-full border-2 px-3 py-1.5 text-[13px] font-extrabold ${cat === c ? "border-ink bg-ink text-ground" : "border-line bg-surface text-ink-2"}`}>{c}</button>)}</div>
+      <div className="card"><label className="flex items-center justify-between font-bold"><span>This is a booking confirmation</span><input type="checkbox" checked={asBooking} onChange={e => setAsBooking(e.target.checked)} className="h-5 w-5 accent-[var(--teal)]" /></label>
+        {asBooking ? <div className="mt-3 flex flex-col gap-2">{forItem && <div className="rounded-xl bg-teal-soft px-3 py-2 text-[13px]">Will be linked to <b>{forItem.title}</b> (Day {forItem.day}) and mark it booked.</div>}<input className="input" placeholder="What is booked? e.g. Huskisson Beach cottage · 2 nights" value={bk.title} onChange={e => setBk({ ...bk, title: e.target.value })} /><div className="grid grid-cols-2 gap-2"><input className="input" placeholder="Provider" value={bk.provider} onChange={e => setBk({ ...bk, provider: e.target.value })} /><input className="input" placeholder="Reference" value={bk.reference} onChange={e => setBk({ ...bk, reference: e.target.value })} /></div><input className="input" inputMode="decimal" placeholder="Cost in trip currency (optional)" value={bk.cost} onChange={e => setBk({ ...bk, cost: e.target.value })} /></div>
+          : bookings.length ? <div className="mt-3"><div className="text-[12.5px] text-ink-3">Link to an existing booking (optional)</div><select className="input mt-1" value={linkBooking} onChange={e => setLinkBooking(e.target.value)}><option value="">Not linked</option>{bookings.map(x => <option key={x.id} value={x.id}>{x.title}</option>)}</select></div> : null}</div>
+      {err && <p className="text-[13px] text-bad">{err}</p>}
+      <button type="button" disabled={pending || (!file && !asBooking) || (asBooking && !bk.title.trim())} onClick={submit} className="btn btn-sun w-full py-4 text-[16px] disabled:opacity-50">{pending ? t("inbox.reading") : asBooking ? t("inbox.addBooking") : "Save to documents"}</button>
+    </div>
+  );
+}

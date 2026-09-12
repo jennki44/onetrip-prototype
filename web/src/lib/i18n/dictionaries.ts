@@ -1,0 +1,133 @@
+/* Every user-facing string lives here. Keys are stable; values are plain, friendly language.
+   Traditional Chinese follows the tone of the family's own day sheet. */
+
+const en = {
+  app: { name: "OneTRIP", tagline: "One trip. Everyone together.", sub: "Plan, decide, spend and travel together in one shared trip." },
+  nav: { today: "Today", plan: "Plan", map: "Map", money: "Money", more: "More", add: "Add to trip" },
+  common: {
+    save: "Save", cancel: "Cancel", back: "Back", done: "Done", edit: "Edit", delete: "Delete", confirm: "Confirm", continue: "Continue",
+    people: "people", person: "person", day: "Day", of: "of", travellers: "travellers", loading: "Working on it…",
+    justNow: "Just now", today: "Today", yesterday: "Yesterday", tomorrow: "Tomorrow", view: "View", open: "Open", all: "All",
+  },
+  welcome: { create: "Create a trip", join: "Join a trip", signin: "Already have an account? Sign in", demo: "Open the demo trip" },
+  auth: { title: "Sign in", email: "Email", magic: "Send me a sign-in link", sent: "Check your email for a sign-in link.", signout: "Sign out" },
+  create: {
+    where: "Where are you going?", basics: "Start with the basics. You can change everything later.",
+    destination: "Destination", searchDest: "Search destination", start: "Start date", end: "End date",
+    who: "Who's coming and what kind of trip?", addSelf: "Add yourself now. Invite the others in a moment.", style: "Trip style · pick any",
+    budget: "Budget and currency", budgetSub: "Optional. OneTRIP tracks spending in the trip currency and reports in your home currency.",
+    groupBudget: "Group budget (optional)", tripCurrency: "Trip currency", homeCurrency: "Home currency", createTrip: "Create trip",
+    styles: { relaxed: "Relaxed", balanced: "Balanced", busy: "Busy", adventure: "Adventure", food: "Food", family: "Family", budget: "Budget", luxury: "Luxury" },
+  },
+  invite: {
+    title: "Invite your travel group", sub: "Everyone can add plans, vote and track expenses together.",
+    link: "Invite link", code: "Join with code", copy: "Copy", copied: "Link copied", share: "Share link", whatsapp: "WhatsApp", sms: "SMS", email: "Email", qr: "QR code",
+    goToTrip: "Go to trip", preview: "Travellers can preview the trip before creating an account.", joined: "Joined", invited: "Invited", owner: "Owner", traveller: "Traveller",
+  },
+  join: { title: "Join a trip", sub: "Enter the code your friend shared. You can preview before you join.", preview: "Preview trip", asGuest: "Join as guest", notNow: "Not now" },
+  home: {
+    next: "Next", today: "Today", fullDay: "Full day", decision: "Group decision", allDecisions: "All decisions", money: "Money", details: "Details",
+    health: "Trip health", directions: "Directions", travelMode: "Travel Mode", nothingElse: "Nothing else planned today.",
+    budget: "Budget", spent: "Spent", remaining: "Remaining", forecast: "Forecast",
+    over: "You may finish about {amount} over budget.", under: "On track to finish under budget.", minAway: "{n} min from where you are",
+    needsVote: "Needs your vote", voted: "{n} / {total} voted", leading: "Leading",
+  },
+  today: { now: "Now", next: "Next", later: "Later", tonight: "Tonight", free: "Free until {time}", nothing: "Nothing scheduled right now.", tripMoney: "Trip money", youSpent: "You have spent", action: "Action needed", vote: "Vote for {title}." },
+  plan: { title: "Plan", sub: "Itinerary and calendar — everyone edits the same one.", timeline: "Timeline", calendar: "Calendar", addActivity: "+ Activity", plans: "{n} plans", stay: "Stay", driving: "Driving", noPlans: "Nothing planned for {day}", noPlansSub: "Add an activity or ask Trip Brain for ideas.", travel: "{n} min", drive: "Drive {t}", conflict: "arrives late" },
+  item: { who: "Who's going", connected: "Connected to this plan", nothingLinked: "Nothing linked yet. Bookings, receipts and votes will show up here.", addReceipt: "Add receipt", map: "Map", bookingMissing: "Booking missing", dropConfirmation: "Drop a confirmation into Trip Inbox", resolve: "Resolve", fromPrevious: "{n} min from the previous stop" },
+  status: { idea: "Idea", proposed: "Proposed", voting: "Voting", confirmed: "Confirmed", cancelled: "Cancelled", completed: "Done", booked: "Booked", notBooked: "Not booked" },
+  decisions: {
+    title: "Group decisions", sub: "Things your group still needs to decide.", needsVotes: "Needs votes", almost: "Almost decided", confirmed: "Confirmed",
+    closes: "Closes {date}", decided: "Decided", empty: "Nothing to decide yet.", emptySub: "Save a restaurant or activity and ask your group to vote.", find: "Find something",
+    love: "Love", good: "Good", maybe: "Maybe", no: "No", perPerson: "/person", estimated: "Estimated", stillToVote: "still to vote", everyoneVoted: "everyone voted",
+    recommendation: "Trip Brain recommendation", strongest: "{name} is currently the strongest group choice.", why: "Why", keepVoting: "Keep voting", confirmX: "Confirm {name}",
+    addedTo: "Added to {day} at {time}.", suggestAnother: "+ Suggest another option from the map",
+  },
+  money: {
+    title: "Money", overview: "Overview", expenses: "Expenses", balances: "Balances", tripBudget: "Trip budget", byCategory: "By category", byDay: "Spending by day",
+    paidBy: "Paid by {name}", whoOwes: "Who owes whom", settled: "Settled", isOwed: "is owed", owes: "owes", settleUp: "Settle up", simplify: "Simplify settlement",
+    payments: "{n} payments clear everything", outstanding: "Total outstanding", markPaid: "Mark as paid", remind: "Remind", details: "View details",
+    empty: "No expenses yet.", emptySub: "Add your first expense to start tracking group spending.", addExpense: "Add expense",
+    scan: "Scan receipt", manual: "Enter manually", voice: "Add by voice", merchant: "Merchant", amount: "Amount", currency: "Currency", date: "Date", payer: "Paid by",
+    participants: "Participants", category: "Category", split: "Split", notes: "Notes", rate: "Exchange rate", original: "original amount is always kept", approx: "approximately",
+    splitTypes: { equal: "Equal", amounts: "Specific amounts", percent: "Percentage", shares: "Shares", selected: "Selected people", itemised: "Itemised" },
+    saveExpense: "Save expense", eachShare: "Each person's share", total: "Total",
+    categories: { Accommodation: "Accommodation", Food: "Food", Activities: "Activities", Transport: "Transport", Shopping: "Shopping", Other: "Other" },
+  },
+  receipt: { scan: "Scan receipt", frame: "Place the whole receipt inside the frame.", reading: "Reading your receipt…", found: "We found a receipt.", check: "Check the details — you can edit any field.", looksCorrect: "Looks correct", items: "Items", assign: "Tap the people who shared each item. Skip this to split equally.", splitEqually: "Split equally", useItems: "Use these items", failed: "We couldn't read this receipt.", tryLight: "better lighting", tryFlat: "flatten the receipt", tryUpload: "upload another photo", tryAgain: "Try again" },
+  inbox: { title: "Trip Inbox", sub: "Drop anything here. OneTRIP will organise it.", reading: "OneTRIP is reading this…", finding: "Finding this booking…", bookingFound: "Booking found", addBooking: "Add booking", discard: "Discard", recent: "Recently added", failedBooking: "We couldn't identify this booking." },
+  brain: { title: "Trip Brain", sub: "Ask anything about your trip. Answers use your real itinerary, bookings and expenses.", ask: "Ask Trip Brain...", try: "Try asking", another: "Ask another", note: "Trip Brain explains its reasoning, never invents bookings or rates, and asks before changing anything." },
+  health: { title: "Trip Health", sub: "Everything OneTRIP is watching for you.", overall: "Overall", good: "Good", mostly: "Mostly good", attention: "Needs attention", resolve: "Resolve" },
+  travel: { title: "Travel Mode", now: "Now", next: "Next", after: "After", exit: "Exit", freeTime: "Free time" },
+  more: { title: "More", settings: "Settings", travellers: "Travellers", documents: "Documents", bookings: "Bookings", history: "Activity history", memories: "Memories", notifications: "Notifications", feedback: "Give feedback", signout: "Switch trip / sign out", language: "Language" },
+  settings: { look: "Look", lookSub: "Pick the mood. Data and layout stay the same.", reporting: "Reporting currency", reportingSub: "Original amounts are always kept", appearance: "Appearance", auto: "Auto", light: "Light", dark: "Dark" },
+  errors: { generic: "Something went wrong. Try again.", notMember: "You're not part of this trip yet.", needName: "Give it a name first." },
+} as const;
+
+type DeepStrings<T> = { [K in keyof T]: T[K] extends string ? string : DeepStrings<T[K]> };
+export type Dictionary = DeepStrings<typeof en>;
+
+const zhHant: Dictionary = {
+  app: { name: "OneTRIP", tagline: "一個行程，大家一齊。", sub: "計劃、決定、使費、旅行 — 全部喺同一個共享行程入面。" },
+  nav: { today: "今日", plan: "行程", map: "地圖", money: "錢", more: "更多", add: "加入行程" },
+  common: {
+    save: "儲存", cancel: "取消", back: "返回", done: "完成", edit: "編輯", delete: "刪除", confirm: "確認", continue: "繼續",
+    people: "人", person: "人", day: "第", of: "/", travellers: "位旅伴", loading: "處理緊…",
+    justNow: "啱啱", today: "今日", yesterday: "琴日", tomorrow: "聽日", view: "查看", open: "打開", all: "全部",
+  },
+  welcome: { create: "建立行程", join: "加入行程", signin: "已有帳戶？登入", demo: "打開示範行程" },
+  auth: { title: "登入", email: "電郵", magic: "傳送登入連結", sent: "請查看電郵入面嘅登入連結。", signout: "登出" },
+  create: {
+    where: "去邊度？", basics: "先填基本資料，之後全部都可以改。",
+    destination: "目的地", searchDest: "搜尋目的地", start: "出發日期", end: "回程日期",
+    who: "邊個去？係邊種旅行？", addSelf: "先加自己，一陣先邀請其他人。", style: "旅行風格 · 可以揀多個",
+    budget: "預算同貨幣", budgetSub: "可選。OneTRIP 以當地貨幣記錄使費，再以你嘅本地貨幣顯示。",
+    groupBudget: "全組預算（可選）", tripCurrency: "當地貨幣", homeCurrency: "本地貨幣", createTrip: "建立行程",
+    styles: { relaxed: "悠閒", balanced: "均衡", busy: "密集", adventure: "探險", food: "美食", family: "家庭", budget: "慳錢", luxury: "豪華" },
+  },
+  invite: {
+    title: "邀請旅伴", sub: "每個人都可以加行程、投票同記錄使費。",
+    link: "邀請連結", code: "用代碼加入", copy: "複製", copied: "已複製連結", share: "分享連結", whatsapp: "WhatsApp", sms: "短訊", email: "電郵", qr: "QR 碼",
+    goToTrip: "前往行程", preview: "旅伴可以先預覽行程，之後先開帳戶。", joined: "已加入", invited: "已邀請", owner: "擁有者", traveller: "旅伴",
+  },
+  join: { title: "加入行程", sub: "輸入朋友分享嘅代碼，加入前可以先預覽。", preview: "預覽行程", asGuest: "以訪客身份加入", notNow: "暫時唔加" },
+  home: {
+    next: "下一站", today: "今日", fullDay: "全日行程", decision: "小組決定", allDecisions: "全部決定", money: "錢", details: "詳情",
+    health: "行程健康", directions: "路線", travelMode: "旅行模式", nothingElse: "今日冇其他安排。",
+    budget: "預算", spent: "已用", remaining: "剩餘", forecast: "預計",
+    over: "預計會超出預算約 {amount}。", under: "預計會喺預算之內。", minAway: "距離你 {n} 分鐘",
+    needsVote: "等你投票", voted: "{n} / {total} 已投票", leading: "領先",
+  },
+  today: { now: "而家", next: "下一站", later: "之後", tonight: "今晚", free: "自由時間至 {time}", nothing: "而家冇安排。", tripMoney: "行程使費", youSpent: "已經使咗", action: "要處理", vote: "為「{title}」投票。" },
+  plan: { title: "行程", sub: "行程表同月曆 — 大家編輯同一份。", timeline: "時間線", calendar: "月曆", addActivity: "+ 活動", plans: "{n} 個安排", stay: "住宿", driving: "駕車", noPlans: "{day} 未有安排", noPlansSub: "加個活動，或者問下 Trip Brain 有咩建議。", travel: "{n} 分鐘", drive: "車程 {t}", conflict: "會遲到" },
+  item: { who: "邊個去", connected: "同呢個安排有關", nothingLinked: "未有連結。預訂、收據同投票會喺度顯示。", addReceipt: "加收據", map: "地圖", bookingMissing: "未有預訂", dropConfirmation: "將確認信放入行程收件箱", resolve: "處理", fromPrevious: "由上一站 {n} 分鐘" },
+  status: { idea: "構思", proposed: "提議", voting: "投票中", confirmed: "已確認", cancelled: "已取消", completed: "完成", booked: "已預訂", notBooked: "未預訂" },
+  decisions: {
+    title: "小組決定", sub: "大家仲要決定嘅事。", needsVotes: "等投票", almost: "差唔多決定", confirmed: "已確認",
+    closes: "{date} 截止", decided: "已決定", empty: "暫時冇嘢要決定。", emptySub: "儲存一間餐廳或者活動，叫大家投票。", find: "搵嘢做",
+    love: "超鍾意", good: "好", maybe: "考慮下", no: "唔要", perPerson: "/人", estimated: "估計", stillToVote: "未投票", everyoneVoted: "全部已投票",
+    recommendation: "Trip Brain 建議", strongest: "{name} 而家係最多人支持嘅選擇。", why: "原因", keepVoting: "繼續投票", confirmX: "確認 {name}",
+    addedTo: "已加入 {day} {time}。", suggestAnother: "+ 喺地圖再提議一個選項",
+  },
+  money: {
+    title: "錢", overview: "總覽", expenses: "使費", balances: "結餘", tripBudget: "行程預算", byCategory: "按類別", byDay: "每日使費",
+    paidBy: "{name} 付款", whoOwes: "邊個欠邊個", settled: "已結清", isOwed: "應收", owes: "欠", settleUp: "結算", simplify: "簡化結算",
+    payments: "{n} 筆付款就清晒", outstanding: "未結總額", markPaid: "標記為已付", remind: "提醒", details: "查看詳情",
+    empty: "未有使費。", emptySub: "加第一筆使費，開始記錄小組開支。", addExpense: "加使費",
+    scan: "掃描收據", manual: "手動輸入", voice: "語音輸入", merchant: "商戶", amount: "金額", currency: "貨幣", date: "日期", payer: "付款人",
+    participants: "參與者", category: "類別", split: "分攤", notes: "備註", rate: "匯率", original: "原始金額會一直保留", approx: "約",
+    splitTypes: { equal: "平均", amounts: "指定金額", percent: "百分比", shares: "份數", selected: "指定人", itemised: "逐項" },
+    saveExpense: "儲存使費", eachShare: "每人份額", total: "總計",
+    categories: { Accommodation: "住宿", Food: "飲食", Activities: "活動", Transport: "交通", Shopping: "購物", Other: "其他" },
+  },
+  receipt: { scan: "掃描收據", frame: "將整張收據放入框內。", reading: "讀緊你張收據…", found: "搵到收據。", check: "檢查一下 — 每個欄位都可以改。", looksCorrect: "冇問題", items: "項目", assign: "㩒下每項有份嘅人。跳過就平均分。", splitEqually: "平均分", useItems: "用呢啲項目", failed: "讀唔到呢張收據。", tryLight: "光線再好啲", tryFlat: "將收據壓平", tryUpload: "上載另一張相", tryAgain: "再試" },
+  inbox: { title: "行程收件箱", sub: "咩都可以放入嚟，OneTRIP 會幫你整理。", reading: "OneTRIP 讀緊…", finding: "搵緊呢個預訂…", bookingFound: "搵到預訂", addBooking: "加入預訂", discard: "唔要", recent: "最近加入", failedBooking: "認唔到呢個預訂。" },
+  brain: { title: "Trip Brain", sub: "問任何關於呢個行程嘅嘢。答案用你真實嘅行程、預訂同使費。", ask: "問 Trip Brain...", try: "試下問", another: "再問", note: "Trip Brain 會解釋原因，唔會作預訂或匯率，改嘢之前一定會問你。" },
+  health: { title: "行程健康", sub: "OneTRIP 幫你留意緊嘅所有嘢。", overall: "整體", good: "良好", mostly: "大致良好", attention: "要處理", resolve: "處理" },
+  travel: { title: "旅行模式", now: "而家", next: "下一站", after: "之後", exit: "退出", freeTime: "自由時間" },
+  more: { title: "更多", settings: "設定", travellers: "旅伴", documents: "文件", bookings: "預訂", history: "活動紀錄", memories: "回憶", notifications: "通知", feedback: "俾意見", signout: "轉行程 / 登出", language: "語言" },
+  settings: { look: "外觀", lookSub: "揀個心情，資料同版面唔變。", reporting: "顯示貨幣", reportingSub: "原始金額會一直保留", appearance: "主題", auto: "自動", light: "淺色", dark: "深色" },
+  errors: { generic: "出咗啲問題，再試一次。", notMember: "你仲未係呢個行程嘅成員。", needName: "先改個名。" },
+};
+
+export const dictionaries: Record<"en" | "zh-Hant", Dictionary> = { en, "zh-Hant": zhHant };
