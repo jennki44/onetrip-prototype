@@ -47,6 +47,18 @@ export function nowSlots(b: TripBundle, now: Date) {
   return { day, items, current: cur, next, later };
 }
 
+/* ---- localised content: show the Traditional Chinese variant when the viewer's language is Chinese and one exists ---- */
+export const isZh = (locale?: string) => !!locale && locale.startsWith("zh");
+export const itemTitle = (i: Pick<ItineraryItem, "title" | "title_zh">, locale?: string) => (isZh(locale) && i.title_zh) || i.title;
+export const itemNote = (i: Pick<ItineraryItem, "note" | "note_zh">, locale?: string) => (isZh(locale) && i.note_zh) || i.note;
+export const itemFlag = (i: Pick<ItineraryItem, "flag" | "flag_zh">, locale?: string) => (isZh(locale) && i.flag_zh) || i.flag;
+export const placeName = (p: Pick<Place, "name" | "name_zh"> | null | undefined, locale?: string) => (p ? (isZh(locale) && p.name_zh) || p.name : "");
+export const decTitle = (d: Pick<Decision, "title" | "title_zh">, locale?: string) => (isZh(locale) && d.title_zh) || d.title;
+export const decQuestion = (d: Pick<Decision, "question" | "question_zh">, locale?: string) => (isZh(locale) && d.question_zh) || d.question;
+export const optionLabel = (b: TripBundle, o: DecisionOption, locale?: string) => (o.place_id ? placeName(place(b, o.place_id), locale) : ((isZh(locale) && o.label_zh) || o.label)) || "";
+export const optionSub = (o: DecisionOption, locale?: string) => (isZh(locale) && o.sub_zh) || o.sub;
+export function dayL(d: TripDay | undefined, locale?: string) { if (!d) return undefined; const z = isZh(locale); return { ...d, theme: (z && d.theme_zh) || d.theme, stay: (z && d.stay_zh) || d.stay, drive: (z && d.drive_zh) || d.drive, rule: (z && d.rule_zh) || d.rule, caption: (z && d.caption_zh) || d.caption }; }
+
 export const place = (b: TripBundle, id: string | null) => (id ? b.places.find(p => p.id === id) || null : null);
 export const member = (b: TripBundle, id: string | null) => (id ? b.members.find(m => m.user_id === id) || null : null);
 export const photoOf = (b: TripBundle, i: ItineraryItem) => i.photo_url || place(b, i.place_id)?.photo_url || null;
@@ -92,12 +104,12 @@ export interface HealthCheck { tone: "good" | "warn" | "bad"; text: string; sub?
 export function healthChecks(b: TripBundle, today: number, t: (k: string, v?: Record<string, string | number>) => string, locale: string): HealthCheck[] {
   const out: HealthCheck[] = []; const base = `/t/${b.trip.id}`;
   const flight = b.bookings.find(x => x.type === "flight");
-  out.push(flight ? { tone: "good", text: "Flights confirmed", link: `${base}/bookings/${flight.id}` } : { tone: "warn", text: "No flight booking yet", link: `${base}/bookings` });
+  out.push(flight ? { tone: "good", text: t("healthx.flightsOk"), link: `${base}/bookings/${flight.id}` } : { tone: "warn", text: t("healthx.noFlights"), link: `${base}/bookings` });
   const hotel = b.bookings.find(x => x.type === "hotel");
-  out.push(hotel ? { tone: "good", text: `${hotel.title.split(" · ")[0]} confirmed`, link: `${base}/bookings/${hotel.id}` } : { tone: "warn", text: "No accommodation booking yet", link: `${base}/bookings` });
-  for (const d of b.decisions.filter(x => x.status !== "confirmed")) out.push({ tone: "warn", text: `${d.title} needs a decision`, sub: `${votersOf(b, d).size} of ${b.members.length} voted`, link: `${base}/decisions/${d.id}`, resolve: { kind: "decision", id: d.id } });
-  for (const i of b.items.filter(x => x.booking === "needed" && x.status !== "cancelled")) out.push({ tone: i.category === "stay" ? "bad" : "warn", text: `${i.title} — ${i.category === "stay" ? "no booking" : "not booked"}`, sub: `${dayLabel(b.trip, i.day, locale)} · ${fmtTime(i.start_time, locale)}`, link: `${base}/plan/${i.id}`, resolve: { kind: "booking", id: i.id } });
-  const bud = budgetBase(b); if (bud != null) { const over = forecastBase(b, today) - bud; if (over > 0) out.push({ tone: "warn", text: `Forecast is ${inCurrency(b, over, b.trip.home_currency, { decimals: 0 })} over budget`, sub: "Based on paid expenses plus committed plans", link: `${base}/money` }); }
+  out.push(hotel ? { tone: "good", text: t("healthx.stayOk", { name: hotel.title.split(" · ")[0] }), link: `${base}/bookings/${hotel.id}` } : { tone: "warn", text: t("healthx.noStay"), link: `${base}/bookings` });
+  for (const d of b.decisions.filter(x => x.status !== "confirmed")) out.push({ tone: "warn", text: t("healthx.needsDecision", { title: decTitle(d, locale) }), sub: t("healthx.votedOf", { n: votersOf(b, d).size, total: b.members.length }), link: `${base}/decisions/${d.id}`, resolve: { kind: "decision", id: d.id } });
+  for (const i of b.items.filter(x => x.booking === "needed" && x.status !== "cancelled")) out.push({ tone: i.category === "stay" ? "bad" : "warn", text: t(i.category === "stay" ? "healthx.noBooking" : "healthx.notBooked", { title: itemTitle(i, locale) }), sub: `${dayLabel(b.trip, i.day, locale)} · ${fmtTime(i.start_time, locale)}`, link: `${base}/plan/${i.id}`, resolve: { kind: "booking", id: i.id } });
+  const bud = budgetBase(b); if (bud != null) { const over = forecastBase(b, today) - bud; if (over > 0) out.push({ tone: "warn", text: t("healthx.overBudget", { amount: inCurrency(b, over, b.trip.home_currency, { decimals: 0 }) }), sub: t("healthx.overSub"), link: `${base}/money` }); }
   return out;
 }
 export function healthOverall(checks: HealthCheck[]) { if (checks.some(c => c.tone === "bad")) return "bad"; if (checks.filter(c => c.tone === "warn").length > 1) return "warn"; return "good"; }

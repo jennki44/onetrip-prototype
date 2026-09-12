@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { loadTrip } from "@/lib/trip/load";
 import { getT } from "@/lib/i18n/server";
 import { currentUser } from "@/lib/supabase/server";
-import { fmtTime, inCurrency, place, rate } from "@/lib/trip/derive";
+import { fmtTime, inCurrency, itemTitle, place, placeName, rate } from "@/lib/trip/derive";
 import { Avatar } from "@/components/ui";
 
 export default async function ExpenseDetail({ params }: { params: Promise<{ tripId: string; expenseId: string }> }) {
@@ -17,7 +17,7 @@ export default async function ExpenseDetail({ params }: { params: Promise<{ trip
       <div className="card"><div className="num font-display text-[30px] font-bold">{inCurrency(b, e.amount_minor, e.currency)} <span className="text-[12px] font-normal text-ink-3">{e.currency}</span></div>{e.currency !== rc && <div className="text-ink-2">{t("money.approx")} <b>{inCurrency(b, e.base_minor, rc)}</b></div>}<div className="mt-2 text-[12.5px] text-ink-3">{t("money.rate")}: 1 {b.trip.base_currency} = {rate(b.trip.base_currency, rc).toFixed(2)} {rc} · {t("money.original")}</div><div className="mt-3 flex items-center gap-2 border-t border-line-2 pt-3 text-[13px]"><span className="text-ink-3">{t("money.payer")}</span>{payer && <Avatar p={payer} size="sm" />}<b>{payer?.name}</b><span className="ml-auto text-ink-3">{t("money.split")}: {t(`money.splitTypes.${e.split}`)}</span></div></div>
       <div className="card mt-3"><div className="eyebrow mb-2">{t("money.eachShare")}</div>{shares.map(s => { const p = b.members.find(m => m.user_id === s.user_id)?.profile; return <div key={s.user_id} className="flex items-center justify-between border-t border-line-2 py-1.5 first:border-t-0"><span className="flex items-center gap-2">{p && <Avatar p={p} size="sm" />} {p?.name}</span><span className="num"><b>{inCurrency(b, s.share_minor, b.trip.base_currency)}</b> <span className="text-[12px] text-ink-3">≈ {inCurrency(b, s.share_minor, rc)}</span></span></div>; })}</div>
       {e.note && <div className="card mt-3 text-[14px]">📝 {e.note}</div>}
-      <div className="card mt-3"><div className="eyebrow mb-2">{t("ui.connected")}</div><div className="flex flex-wrap gap-1.5">{pl && <Link href={`${base}/map?focus=${pl.id}`} className="pill pill-teal">📍 {pl.name}</Link>}{item && <Link href={`${base}/plan/${item.id}`} className="pill pill-teal">📅 {item.title}</Link>}{bk && <Link href={`${base}/bookings/${bk.id}`} className="pill pill-teal">🎟 {bk.title}</Link>}<Link href={`${base}/money`} className="pill pill-teal">💵 {t(`money.categories.${e.category}`)}</Link><Link href={`${base}/money?tab=balances`} className="pill pill-teal">⚖️ {t("money.balances")}</Link></div></div>
+      <div className="card mt-3"><div className="eyebrow mb-2">{t("ui.connected")}</div><div className="flex flex-wrap gap-1.5">{pl && <Link href={`${base}/map?focus=${pl.id}`} className="pill pill-teal">📍 {placeName(pl, locale)}</Link>}{item && <Link href={`${base}/plan/${item.id}`} className="pill pill-teal">📅 {itemTitle(item, locale)}</Link>}{bk && <Link href={`${base}/bookings/${bk.id}`} className="pill pill-teal">🎟 {bk.title}</Link>}<Link href={`${base}/money`} className="pill pill-teal">💵 {t(`money.categories.${e.category}`)}</Link><Link href={`${base}/money?tab=balances`} className="pill pill-teal">⚖️ {t("money.balances")}</Link></div></div>
     </div>
   );
 }

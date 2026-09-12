@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { loadTrip } from "@/lib/trip/load";
 import { getT } from "@/lib/i18n/server";
 import { currentUser } from "@/lib/supabase/server";
-import { budgetBase, dateRange, dayCount, dayLabel, fmtTime, forecastBase, healthChecks, inCurrency, leadingOption, nowSlots, photoOf, place, spentBase, votersOf } from "@/lib/trip/derive";
+import { budgetBase, dateRange, dayCount, dayL, dayLabel, decQuestion, decTitle, fmtTime, forecastBase, healthChecks, inCurrency, itemTitle, leadingOption, nowSlots, optionLabel, photoOf, place, placeName, spentBase, votersOf } from "@/lib/trip/derive";
 import { Avatars, Bar, Eyebrow, Pill } from "@/components/ui";
 import { demoNow } from "@/lib/trip/clock";
 
@@ -15,7 +15,7 @@ export default async function TripHome({ params }: { params: Promise<{ tripId: s
   const base = `/t/${tripId}`; const rc = b.members.find(m => m.user_id === user?.id)?.profile.reporting_currency || b.trip.home_currency;
   const spent = spentBase(b), bud = budgetBase(b), fc = forecastBase(b, day);
   const open = b.decisions.filter(d => d.status !== "confirmed"); const checks = healthChecks(b, day, t, locale);
-  const total = dayCount(b.trip); const dayInfo = b.days.find(d => d.day === day);
+  const total = dayCount(b.trip); const dayInfo = dayL(b.days.find(d => d.day === day), locale);
   const before = day < 1, after = day > total;
   return (
     <div>
@@ -35,7 +35,7 @@ export default async function TripHome({ params }: { params: Promise<{ tripId: s
             {(() => { const n = before ? (b.items.filter(i => i.day === 1).sort((x, y) => x.start_time.localeCompare(y.start_time))[0] || null) : next; if (!n) return <p className="mt-2 text-white/90">{t("home.nothingElse")}</p>; const ph = photoOf(b, n); const pl = place(b, n.place_id); return (
               <Link href={`${base}/plan/${n.id}`} className="mt-2 flex items-center gap-3.5">
                 {ph ? <img src={ph} alt="" className="h-16 w-16 rounded-2xl object-cover ring-2 ring-white/40" /> : <span className="text-[40px]">{n.emoji}</span>}
-                <div className="min-w-0 flex-1"><div className="font-display text-[20px] font-bold leading-tight">{n.title}</div><div className="text-[14px] text-white/90">{fmtTime(n.start_time, locale)}{pl ? ` · ${pl.name}` : ""}</div>{n.travel_min ? <div className="mt-1 text-[12px] text-white/80">🚗 {t("home.minAway", { n: n.travel_min })}{current ? ` · ${t("today.now").toLowerCase()}: ${current.title}` : ""}</div> : null}</div>
+                <div className="min-w-0 flex-1"><div className="font-display text-[20px] font-bold leading-tight">{itemTitle(n, locale)}</div><div className="text-[14px] text-white/90">{fmtTime(n.start_time, locale)}{pl ? ` · ${placeName(pl, locale)}` : ""}</div>{n.travel_min ? <div className="mt-1 text-[12px] text-white/80">🚗 {t("home.minAway", { n: n.travel_min })}{current ? ` · ${t("today.now").toLowerCase()}: ${itemTitle(current, locale)}` : ""}</div> : null}</div>
                 <span className="text-white/70">›</span>
               </Link>); })()}
             <div className="mt-3 flex gap-2"><Link href={`${base}/map`} className="btn btn-sun btn-sm">{t("home.directions")}</Link><Link href={`${base}/travel`} className="btn btn-sm bg-white/15 text-white">{t("home.travelMode")}</Link></div>
@@ -47,7 +47,7 @@ export default async function TripHome({ params }: { params: Promise<{ tripId: s
               {(before ? b.items.filter(i => i.day === 1).sort((x, y) => x.start_time.localeCompare(y.start_time)) : items).map(i => (
                 <Link key={i.id} href={`${base}/plan/${i.id}`} className="flex items-center gap-3 px-4 py-3">
                   <span className="num w-[66px] shrink-0 text-[13px] font-bold text-ink-2">{fmtTime(i.start_time, locale)}</span><span>{i.emoji}</span>
-                  <span className="min-w-0 flex-1 truncate font-semibold">{i.title}</span>
+                  <span className="min-w-0 flex-1 truncate font-semibold">{itemTitle(i, locale)}</span>
                   {i.booking === "booked" && <Pill tone="good">🎟 {t("status.booked")}</Pill>}{i.booking === "needed" && <Pill tone="bad">{t("status.notBooked")}</Pill>}
                 </Link>
               ))}
@@ -57,9 +57,9 @@ export default async function TripHome({ params }: { params: Promise<{ tripId: s
 
           <section className="mt-5">
             <Eyebrow action={{ href: `${base}/decisions`, label: t("home.allDecisions") }}>{t("home.decision")}</Eyebrow>
-            {open.slice(0, 2).map(d => { const n = votersOf(b, d).size; const lead = leadingOption(b, d); const mine = b.votes.some(v => v.decision_id === d.id && v.user_id === user?.id); const leadName = lead ? (lead.place_id ? place(b, lead.place_id)?.name : lead.label) : null; return (
+            {open.slice(0, 2).map(d => { const n = votersOf(b, d).size; const lead = leadingOption(b, d); const mine = b.votes.some(v => v.decision_id === d.id && v.user_id === user?.id); const leadName = lead ? optionLabel(b, lead, locale) : null; return (
               <Link key={d.id} href={`${base}/decisions/${d.id}`} className="card mb-3 block">
-                <div className="flex items-start justify-between gap-2"><div><div className="text-[16px] font-bold">{d.title}</div><div className="text-[12.5px] text-ink-3">{d.question}</div></div><Pill tone="warn">{n >= b.members.length - 1 ? t("decisions.almost") : t("decisions.needsVotes")}</Pill></div>
+                <div className="flex items-start justify-between gap-2"><div><div className="text-[16px] font-bold">{decTitle(d, locale)}</div><div className="text-[12.5px] text-ink-3">{decQuestion(d, locale)}</div></div><Pill tone="warn">{n >= b.members.length - 1 ? t("decisions.almost") : t("decisions.needsVotes")}</Pill></div>
                 <div className="mt-3 flex items-center gap-2"><div className="flex-1"><Bar pct={n / b.members.length * 100} /></div><span className="num text-[12.5px] font-bold">{t("home.voted", { n, total: b.members.length })}</span></div>
                 <div className="mt-3 flex items-center justify-between text-[12.5px]"><span>{leadName ? <>{t("home.leading")}: <b>{leadName}</b>{lead ? ` · ≈ ${inCurrency(b, lead.est_pp_minor, rc)}${t("decisions.perPerson")}` : ""}</> : ""}</span>{!mine && <Pill tone="sun">{t("home.needsVote")}</Pill>}</div>
               </Link>); })}

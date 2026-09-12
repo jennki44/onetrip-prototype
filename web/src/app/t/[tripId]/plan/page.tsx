@@ -4,7 +4,7 @@ import { loadTrip } from "@/lib/trip/load";
 import { getT } from "@/lib/i18n/server";
 import { demoNow } from "@/lib/trip/clock";
 import { currentUser } from "@/lib/supabase/server";
-import { dayCount, dayDate, dayLabel, fmtTime, inCurrency, itemsOnDay, minutes, nowSlots, photoOf, place } from "@/lib/trip/derive";
+import { dayCount, dayDate, dayL, dayLabel, fmtTime, inCurrency, itemNote, itemTitle, itemsOnDay, minutes, nowSlots, photoOf, place, placeName } from "@/lib/trip/derive";
 import { Avatars, PageHead, Pill } from "@/components/ui";
 
 export default async function Plan({ params, searchParams }: { params: Promise<{ tripId: string }>; searchParams: Promise<{ day?: string; view?: string }> }) {
@@ -15,7 +15,7 @@ export default async function Plan({ params, searchParams }: { params: Promise<{
   const day = Math.min(total, Math.max(1, Number(sp.day) || (todayDay >= 1 && todayDay <= total ? todayDay : 1)));
   const view = sp.view === "calendar" ? "calendar" : "timeline"; const base = `/t/${tripId}`;
   const rc = b.members.find(m => m.user_id === user?.id)?.profile.reporting_currency || b.trip.home_currency;
-  const items = itemsOnDay(b, day); const info = b.days.find(d => d.day === day);
+  const items = itemsOnDay(b, day); const info = dayL(b.days.find(d => d.day === day), locale);
   const conflicts = new Set<string>(); for (let k = 1; k < items.length; k++) { const p = items[k - 1], c = items[k]; if (c.travel_min && minutes(p.end_time || p.start_time) + c.travel_min > minutes(c.start_time) + 5) conflicts.add(c.id); }
   const nm = now.getHours() * 60 + now.getMinutes();
   const statusTone = (s: string) => (s === "confirmed" ? "good" : s === "voting" ? "warn" : s === "cancelled" ? "bad" : s === "proposed" ? "teal" : undefined);
@@ -24,10 +24,10 @@ export default async function Plan({ params, searchParams }: { params: Promise<{
       <PageHead title={t("plan.title")} sub={t("plan.sub")} right={<div className="flex rounded-xl bg-surface-2 p-1 text-[13.5px] font-extrabold"><Link href={`${base}/plan?day=${day}`} className={`rounded-lg px-3 py-1.5 ${view === "timeline" ? "bg-surface shadow-card" : "text-ink-3"}`}>{t("plan.timeline")}</Link><Link href={`${base}/plan?view=calendar`} className={`rounded-lg px-3 py-1.5 ${view === "calendar" ? "bg-surface shadow-card" : "text-ink-3"}`}>{t("plan.calendar")}</Link></div>} />
       {view === "calendar" ? (
         <div className="grid grid-cols-3 gap-2.5">
-          {Array.from({ length: total }, (_, i) => i + 1).map(d => { const it = itemsOnDay(b, d); const di = b.days.find(x => x.day === d); return (
+          {Array.from({ length: total }, (_, i) => i + 1).map(d => { const it = itemsOnDay(b, d); const di = dayL(b.days.find(x => x.day === d), locale); return (
             <Link key={d} href={`${base}/plan?day=${d}`} className={`card min-h-[120px] p-3 ${d === todayDay ? "outline outline-2 outline-coral" : ""}`}>
               <div className="font-display text-[15px] font-bold">{t("ui.dayN", { n: d })}</div><div className="mb-2 text-[11.5px] text-ink-3">{dayLabel(b.trip, d, locale)}{di?.theme ? ` · ${di.theme}` : ""}</div>
-              {it.slice(0, 4).map(x => <div key={x.id} className="truncate text-[12px] text-ink-2">{x.emoji} {x.title}</div>)}{it.length > 4 && <div className="text-[12px] text-ink-3">+{it.length - 4}</div>}
+              {it.slice(0, 4).map(x => <div key={x.id} className="truncate text-[12px] text-ink-2">{x.emoji} {itemTitle(x, locale)}</div>)}{it.length > 4 && <div className="text-[12px] text-ink-3">+{it.length - 4}</div>}
               {it.some(x => x.booking === "needed") && <div className="mt-2"><Pill tone="bad">{t("status.notBooked")}</Pill></div>}
             </Link>); })}
         </div>
@@ -49,7 +49,7 @@ export default async function Plan({ params, searchParams }: { params: Promise<{
                     {i.travel_min ? <div className={`-mt-1 mb-2 ml-1 text-[12px] ${conflicts.has(i.id) ? "font-bold text-bad" : "text-ink-3"}`}>{conflicts.has(i.id) ? "⚠️" : "↓"} {i.travel_min >= 60 ? t("plan.drive", { t: `${Math.floor(i.travel_min / 60)} hr${i.travel_min % 60 ? ` ${i.travel_min % 60}` : ""}` }) : t("plan.travel", { n: i.travel_min })}{conflicts.has(i.id) ? ` — ${t("plan.conflict")}` : ""}</div> : null}
                     <Link href={`${base}/plan/${i.id}`} className="card flex items-start gap-3 p-3.5">
                       {ph ? <img src={ph} alt="" className="thumb" /> : <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-surface-2 text-[22px]">{i.emoji}</span>}
-                      <div className="min-w-0 flex-1"><div className="font-bold">{i.title}</div><div className="text-[13px] text-ink-2">{pl ? `${pl.name}${pl.area ? ` · ${pl.area}` : ""}` : i.address || ""}{i.end_time && i.end_time !== i.start_time ? ` · ${fmtTime(i.end_time, locale)}` : ""}</div>{i.note && <div className="mt-0.5 line-clamp-2 text-[13px] text-ink-2">{i.note}</div>}
+                      <div className="min-w-0 flex-1"><div className="font-bold">{itemTitle(i, locale)}</div><div className="text-[13px] text-ink-2">{pl ? `${placeName(pl, locale)}${pl.area ? ` · ${pl.area}` : ""}` : i.address || ""}{i.end_time && i.end_time !== i.start_time ? ` · ${fmtTime(i.end_time, locale)}` : ""}</div>{itemNote(i, locale) && <div className="mt-0.5 line-clamp-2 text-[13px] text-ink-2">{itemNote(i, locale)}</div>}
                         <div className="mt-2 flex flex-wrap items-center gap-1.5"><Pill tone={statusTone(i.status)}>{t(`status.${i.status}`)}</Pill>{i.booking === "booked" && <Pill tone="good">🎟 {t("status.booked")}</Pill>}{i.booking === "needed" && <Pill tone="bad">{t("status.notBooked")}</Pill>}{i.cost_minor ? <Pill>{inCurrency(b, i.cost_minor, rc)}</Pill> : null}<span className="ml-auto"><Avatars people={b.members.filter(m => i.participant_ids.includes(m.user_id)).map(m => m.profile)} max={4} /></span></div></div>
                     </Link>
                   </div>); })}
