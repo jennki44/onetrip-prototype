@@ -298,7 +298,7 @@ SCREENS.home = () => {
   const notes = S.notes.length;
   const left = h`
     <div class="card accent" style="padding:18px">
-      <div class="row between"><span class="eyebrow accent">Next</span><span class="tiny">${dayLabel(TODAY_DAY)} · now ${fmtTime('09:25')}</span></div>
+      <div class="row between"><span class="eyebrow accent">Next</span><span class="tiny">${dayLabel(TODAY_DAY)} · now ${fmtTime(String(NOW.getHours()).padStart(2, '0') + ':' + String(NOW.getMinutes()).padStart(2, '0'))}</span></div>
       ${nxt ? `<div class="row mt8" style="gap:14px;cursor:pointer" onclick="go('item',{id:'${nxt.id}'})">${placePhoto(nxt) ? `<img class="thumb lg" src="${placePhoto(nxt)}" alt="">` : `<span style="font-size:40px">${nxt.emoji}</span>`}<div class="flex1"><div class="mid">${esc(nxt.title)}</div><div class="sub">${fmtTime(nxt.start)} · ${esc(PL(nxt.placeId).name)}</div><div class="tiny mt8">🚶 ${nxt.travelMin || 5} min from where you are${cur ? ' · you are at ' + esc(PL(cur.placeId).name) : ''}</div></div><span class="chev">›</span></div>` : '<p class="sub">Nothing else planned today.</p>'}
       <div class="row mt12" style="gap:8px"><button class="btn sm primary" onclick="go('map',{focus:'${nxt ? nxt.placeId : 'hotel'}'})">Directions</button><button class="btn sm outline" onclick="go('travel')">Travel Mode</button></div>
     </div>
