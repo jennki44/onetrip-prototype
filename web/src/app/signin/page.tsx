@@ -4,10 +4,11 @@ import { currentUser } from "@/lib/supabase/server";
 import { getT } from "@/lib/i18n/server";
 import { sendMagicLink, signInDemo } from "./actions";
 import { DEMO_USERS } from "@/lib/demo";
+import { safeNext } from "@/lib/security/safeNext";
 
 export default async function SignIn({ searchParams }: { searchParams: Promise<{ next?: string; sent?: string; demo?: string; error?: string }> }) {
   const sp = await searchParams;
-  if (await currentUser()) redirect(sp.next || "/trips");
+  if (await currentUser()) redirect(safeNext(sp.next));
   const { t } = await getT(); const demo = process.env.ONETRIP_DEMO === "1";
   return (
     <div className="mx-auto w-full max-w-[440px] px-6 pt-10">
