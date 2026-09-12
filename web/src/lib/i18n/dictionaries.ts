@@ -10,6 +10,7 @@ const en = {
     justNow: "Just now", today: "Today", yesterday: "Yesterday", tomorrow: "Tomorrow", view: "View", open: "Open", all: "All",
   },
   welcome: { create: "Create a trip", join: "Join a trip", signin: "Already have an account? Sign in", demo: "Open the demo trip" },
+  trips: { title: "Your trips", empty: "No trips yet. Create one or join with a code." },
   auth: { title: "Sign in", email: "Email", magic: "Send me a sign-in link", sent: "Check your email for a sign-in link.", signout: "Sign out" },
   create: {
     where: "Where are you going?", basics: "Start with the basics. You can change everything later.",
@@ -76,6 +77,7 @@ const zhHant: Dictionary = {
     justNow: "啱啱", today: "今日", yesterday: "琴日", tomorrow: "聽日", view: "查看", open: "打開", all: "全部",
   },
   welcome: { create: "建立行程", join: "加入行程", signin: "已有帳戶？登入", demo: "打開示範行程" },
+  trips: { title: "我的行程", empty: "未有行程。建立一個，或者用代碼加入。" },
   auth: { title: "登入", email: "電郵", magic: "傳送登入連結", sent: "請查看電郵入面嘅登入連結。", signout: "登出" },
   create: {
     where: "去邊度？", basics: "先填基本資料，之後全部都可以改。",

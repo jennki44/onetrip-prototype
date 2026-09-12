@@ -29,6 +29,8 @@ export const loadTrip = cache(async (tripId: string): Promise<TripBundle | null>
 
 export async function myTrips() {
   const sb = await supabaseServer();
-  const { data } = (await sb.from("trip_members").select("role, trips(*)").order("joined_at", { ascending: false })) as unknown as { data: { role: TripMember["role"]; trips: TripBundle["trip"] | null }[] | null };
+  const { data: { user } } = await sb.auth.getUser(); if (!user) return [];
+  // Only this user's own memberships — members can read the whole member list of a trip, so filter explicitly.
+  const { data } = (await sb.from("trip_members").select("role, trips(*)").eq("user_id", user.id).order("joined_at", { ascending: false })) as unknown as { data: { role: TripMember["role"]; trips: TripBundle["trip"] | null }[] | null };
   return (data || []).filter(r => r.trips).map(r => ({ role: r.role, trip: r.trips as TripBundle["trip"] }));
 }
