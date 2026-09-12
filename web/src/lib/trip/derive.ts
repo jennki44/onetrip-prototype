@@ -20,6 +20,7 @@ export const minutes = (t: string) => { const [h, m] = t.split(":").map(Number);
 export const toHM = (m: number) => `${String(Math.floor(Math.max(0, Math.min(1439, m)) / 60)).padStart(2, "0")}:${String(Math.max(0, m) % 60).padStart(2, "0")}`;
 export function fmtTime(t: string, locale = "en") { const [h, m] = t.split(":").map(Number); if (locale.startsWith("zh")) return `${h < 12 ? "上午" : "下午"} ${((h + 11) % 12) + 1}:${String(m).padStart(2, "0")}`; return `${((h + 11) % 12) + 1}:${String(m).padStart(2, "0")} ${h >= 12 ? "PM" : "AM"}`; }
 
+export const isoDate = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 export function dayDate(trip: Trip, day: number): Date { const d = new Date(trip.start_date + "T00:00:00"); d.setDate(d.getDate() + day - 1); return d; }
 export function dayCount(trip: Trip): number { return Math.round((new Date(trip.end_date + "T00:00:00").getTime() - new Date(trip.start_date + "T00:00:00").getTime()) / 86400000) + 1; }
 export function dayLabel(trip: Trip, day: number, locale = "en", long = false): string {

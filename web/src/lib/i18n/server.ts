@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { dictionaries } from "./dictionaries";
-import { translate } from "./provider";
+import { translate } from "./translate";
 import { DEFAULT_LOCALE, LOCALE_COOKIE, isLocale, type Locale } from "./config";
 
 export async function getLocale(): Promise<Locale> {

@@ -4,12 +4,12 @@ import { loadTrip } from "@/lib/trip/load";
 import { getT } from "@/lib/i18n/server";
 import { currentUser } from "@/lib/supabase/server";
 import { demoNow } from "@/lib/trip/clock";
-import { dayDate, nowSlots } from "@/lib/trip/derive";
+import { dayDate, isoDate, nowSlots } from "@/lib/trip/derive";
 import { ExpenseForm } from "@/components/ExpenseForm";
 
 export default async function NewExpense({ params, searchParams }: { params: Promise<{ tripId: string }>; searchParams: Promise<{ for?: string; mode?: string }> }) {
   const { tripId } = await params; const sp = await searchParams; const [b, { t }, user] = await Promise.all([loadTrip(tripId), getT(), currentUser()]); if (!b) notFound();
-  const base = `/t/${tripId}`; const day = nowSlots(b, demoNow(b.trip)).day; const today = (day >= 1 ? dayDate(b.trip, day) : new Date()).toISOString().slice(0, 10);
+  const base = `/t/${tripId}`; const day = nowSlots(b, demoNow(b.trip)).day; const today = isoDate(day >= 1 ? dayDate(b.trip, day) : new Date());
   const item = sp.for ? b.items.find(i => i.id === sp.for) : undefined;
   if (!sp.mode && !item) return (
     <div className="mx-auto max-w-[560px]"><Link href={`${base}/money`} className="mb-2 inline-block text-[14px] font-extrabold text-ink-2">‹ {t("money.title")}</Link><h1 className="text-[28px]">{t("money.addExpense")}</h1><p className="mb-4 text-ink-2">Pick the fastest way. Everything ends up in the same place.</p>

@@ -2,6 +2,8 @@
 import { createContext, useCallback, useContext, useMemo } from "react";
 import { dictionaries, type Dictionary } from "./dictionaries";
 import { LOCALE_COOKIE, type Locale } from "./config";
+import { translate } from "./translate";
+export { translate };
 
 type Ctx = { locale: Locale; dict: Dictionary; setLocale: (l: Locale) => void };
 const I18nContext = createContext<Ctx | null>(null);
@@ -13,19 +15,6 @@ export function I18nProvider({ locale, children }: { locale: Locale; children: R
   }, []);
   const value = useMemo(() => ({ locale, dict: dictionaries[locale], setLocale }), [locale, setLocale]);
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
-}
-
-/** Resolve a dotted key and fill {placeholders}. Missing keys return the key itself so they are easy to spot. */
-export function translate(dict: Dictionary, key: string, vars?: Record<string, string | number>): string {
-  const parts = key.split(".");
-  let cur: unknown = dict;
-  for (const p of parts) {
-    if (cur && typeof cur === "object" && p in (cur as Record<string, unknown>)) cur = (cur as Record<string, unknown>)[p];
-    else return key;
-  }
-  let s = typeof cur === "string" ? cur : key;
-  if (vars) for (const [k, v] of Object.entries(vars)) s = s.replaceAll(`{${k}}`, String(v));
-  return s;
 }
 
 export function useI18n() {
