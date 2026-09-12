@@ -237,6 +237,7 @@ const DEMO_RECEIPT = {
     { name: 'Sashimi', jpy: 4000, who: ['jennie', 'john', 'mary', 'tom', 'sarah'] },
     { name: 'Drinks', jpy: 3500, who: ['john', 'mary', 'tom'] },
     { name: 'Dessert', jpy: 2500, who: ['sarah', 'tom'] },
+    { name: 'Edamame & pickles', jpy: 1700, who: ['jennie', 'john', 'mary', 'tom', 'sarah'] },
   ],
 };
 
