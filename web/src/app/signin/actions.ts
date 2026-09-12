@@ -3,8 +3,8 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { supabaseServer } from "@/lib/supabase/server";
 import { DEMO_PASSWORD, DEMO_TRIP_ID } from "@/lib/demo";
+import { safeNext } from "@/lib/security/safeNext";
 
-const safeNext = (v: unknown) => (typeof v === "string" && /^\/(?![\/\\])[^\\\s]*$/.test(v) && v.length < 500 ? v : "/trips");
 
 export async function sendMagicLink(form: FormData) {
   const parsed = z.object({ email: z.string().email().max(200), next: z.string().optional() }).safeParse({ email: form.get("email"), next: form.get("next") });
