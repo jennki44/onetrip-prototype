@@ -67,7 +67,8 @@ export function committedBase(b: TripBundle, today: number): number {
   let c = 0;
   for (const bk of b.bookings) if (bk.cost_minor != null && bk.paid_minor != null) c += bk.cost_minor - bk.paid_minor;
   for (const i of b.items) {
-    if (i.day <= today || !i.cost_minor || ["cancelled", "voting", "idea", "proposed"].includes(i.status) || i.booking === "none") continue;
+    // Committed = future plans with an estimate that are confirmed (or need a booking) and have not been paid yet.
+    if (i.day <= today || !i.cost_minor || ["cancelled", "voting", "idea", "proposed"].includes(i.status)) continue;
     const paid = b.expenses.some(e => e.item_id === i.id || (i.booking_id && e.booking_id === i.booking_id)); if (!paid) c += i.cost_minor;
   }
   for (const d of b.decisions) if (d.status !== "confirmed" && d.category === "Food") { const lead = leadingOption(b, d); if (lead) c += lead.est_pp_minor * b.members.length; }
