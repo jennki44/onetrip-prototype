@@ -41,6 +41,31 @@ function navGroup() {
   return 'more';
 }
 
+
+/* ---------- Looks ---------- */
+const LOOKS = [
+  { id: 'classic', name: 'Classic', sw: ['#F1F5F4', '#0F766E', '#E8541E', '#16232E'] },
+  { id: 'postcard', name: 'Postcard', sw: ['#FFF6E5', '#FFD43B', '#1E9BD7', '#FF6B4A'] },
+  { id: 'gummy', name: 'Gummy', sw: ['#F3F0FF', '#7C5CFF', '#FF5CA8', '#B8F2E6'] },
+  { id: 'journal', name: 'Journal', sw: ['#FBF7EE', '#3C7A5A', '#E2503C', '#F6C453'] },
+  { id: 'metro', name: 'Metro', sw: ['#FFFFFF', '#F39700', '#009BBF', '#111418'] },
+];
+let look = 'classic';
+function setLook(id, silent) {
+  look = LOOKS.some(l => l.id === id) ? id : 'classic';
+  if (look === 'classic') delete document.documentElement.dataset.look; else document.documentElement.dataset.look = look;
+  try { localStorage.setItem('onetrip-look', look); } catch (e) {}
+  const sel = $('#lookselect'); if (sel) sel.value = look;
+  if (!silent) { render(); toast(LOOKS.find(l => l.id === look).name + ' look', 'Remembered on this device'); }
+}
+function syncDark() {
+  const t = document.documentElement.dataset.theme;
+  const dark = t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  document.documentElement.dataset.dark = dark ? '1' : '';
+}
+function lookPicker() { return `<div class="looks">${LOOKS.map(l => `<button class="look ${look === l.id ? 'on' : ''}" onclick="setLook('${l.id}')"><span class="sw">${l.sw.map(c => `<i style="background:${c}"></i>`).join('')}</span>${l.name}</button>`).join('')}</div>`; }
+function lookSheet() { openSheet(`<h2 class="h2">Choose a look</h2><p class="sub mb12">Same trip, same data, a different mood. Everyone picks their own.</p>${lookPicker()}<button class="btn block mt16" onclick="closeSheet()">Done</button>`); }
+
 /* ---------- Layout ---------- */
 let layoutPref = 'phone';
 function setLayout(l) { layoutPref = l; try { localStorage.setItem('onetrip-layout', l); } catch (e) {} applyLayout(); }
@@ -312,7 +337,7 @@ SCREENS.home = () => {
     ${notes ? `<div class="section"><div class="eyebrow">Notes</div><div class="list">${S.notes.map(n => `<div class="item"><span>📝</span><div class="body"><div class="title" style="font-weight:600">${esc(n.text)}</div><div class="meta">${P(n.who).name}</div></div></div>`).join('')}</div></div>` : ''}`;
   return h`<div class="screen">
     <div class="hdr"><div><div class="eyebrow">${S.trip.emoji} ${esc(S.trip.name)} · ${plural(S.people.length, 'traveller')}</div><h1 class="h1">Tokyo</h1><p class="sub">${fmtRange()} · Day ${TODAY_DAY} of 9</p></div>
-      <div class="col" style="align-items:flex-end;gap:6px"><button onclick="go('travellers')">${avs(S.people.map(p => p.id))}</button><button class="iconbtn" onclick="go('notifications')" aria-label="Notifications">🔔${S.notifications.some(n => n.unread) ? `<span class="badge" style="position:absolute;margin:-22px 0 0 22px">${S.notifications.filter(n => n.unread).length}</span>` : ''}</button></div></div>
+      <div class="col" style="align-items:flex-end;gap:6px"><button onclick="go('travellers')">${avs(S.people.map(p => p.id))}</button><div class="row" style="gap:6px"><button class="iconbtn" onclick="lookSheet()" aria-label="Choose a look" title="Choose a look">🎨</button><button class="iconbtn" onclick="go('notifications')" aria-label="Notifications">🔔${S.notifications.some(n => n.unread) ? `<span class="badge" style="position:absolute;margin:-22px 0 0 22px">${S.notifications.filter(n => n.unread).length}</span>` : ''}</button></div></div></div>
     <div class="dgrid"><div>${left}</div><div>${right}</div></div>
     <div class="section"><div class="eyebrow">Shortcuts</div><div class="grid4">${[['✨', 'Trip Brain', 'brain'], ['📥', 'Inbox', 'inbox'], ['📄', 'Documents', 'documents'], ['🕘', 'Activity', 'history']].map(([e, l, r]) => `<button class="card tap center" style="padding:12px 4px" onclick="go('${r}')"><div style="font-size:22px">${e}</div><div class="tiny" style="font-weight:700;color:var(--ink)">${l}</div></button>`).join('')}</div></div>
   </div>`;

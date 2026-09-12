@@ -580,7 +580,8 @@ SCREENS.settings = () => h`<div class="screen" style="max-width:600px">${pageHea
   <div class="item"><span class="ic">🎯</span><div class="body"><div class="title">Trip budget</div><div class="meta">AUD $${S.budget.total.toLocaleString()} · categories in Money</div></div><span class="chev">›</span></div>
   <button class="item tap" onclick="go('permissions')"><span class="ic">🔐</span><div class="body"><div class="title">Permissions</div><div class="meta">Roles and what they can do</div></div><span class="chev">›</span></button>
   <button class="item tap" onclick="go('notifications')"><span class="ic">🔔</span><div class="body"><div class="title">Notifications</div><div class="meta">Votes, money, itinerary changes, warnings</div></div><span class="chev">›</span></button>
-  <div class="item"><span class="ic">🌙</span><div class="body"><div class="title">Appearance</div><div class="meta">Follows your device</div></div><div class="seg"><button class="${!document.documentElement.dataset.theme ? 'on' : ''}" onclick="delete document.documentElement.dataset.theme;render()">Auto</button><button class="${document.documentElement.dataset.theme === 'light' ? 'on' : ''}" onclick="document.documentElement.dataset.theme='light';render()">Light</button><button class="${document.documentElement.dataset.theme === 'dark' ? 'on' : ''}" onclick="document.documentElement.dataset.theme='dark';render()">Dark</button></div></div></div>
+  <div class="item" style="flex-direction:column;align-items:stretch"><div class="row"><span class="ic">🎨</span><div class="body"><div class="title">Look</div><div class="meta">Pick the mood. Data and layout stay the same.</div></div></div><div class="mt12">${lookPicker()}</div></div>
+  <div class="item"><span class="ic">🌙</span><div class="body"><div class="title">Appearance</div><div class="meta">Follows your device</div></div><div class="seg"><button class="${!document.documentElement.dataset.theme ? 'on' : ''}" onclick="delete document.documentElement.dataset.theme;syncDark();render()">Auto</button><button class="${document.documentElement.dataset.theme === 'light' ? 'on' : ''}" onclick="document.documentElement.dataset.theme='light';syncDark();render()">Light</button><button class="${document.documentElement.dataset.theme === 'dark' ? 'on' : ''}" onclick="document.documentElement.dataset.theme='dark';syncDark();render()">Dark</button></div></div></div>
   <div class="section"><div class="eyebrow">Trip</div><div class="list"><button class="item tap" onclick="go('invite')"><span class="ic">🔗</span><div class="body"><div class="title">Invite link & code</div><div class="meta">${S.trip.link}</div></div><span class="chev">›</span></button><button class="item tap" onclick="go('welcome')"><span class="ic">🚪</span><div class="body"><div class="title">Leave trip / sign out</div></div><span class="chev">›</span></button></div></div></div>`;
 
 /* ---------- Demo flow shortcuts (desktop bar) ---------- */
@@ -589,6 +590,11 @@ const FLOWS = [['A · Create', () => go('welcome')], ['B · Decide', () => { map
 /* ---------- Boot ---------- */
 (function init() {
   try { layoutPref = localStorage.getItem('onetrip-layout') || 'phone'; } catch (e) {}
+  $('#lookselect').innerHTML = LOOKS.map(l => `<option value="${l.id}">${l.name}</option>`).join('');
+  let savedLook = 'classic'; try { savedLook = localStorage.getItem('onetrip-look') || 'classic'; } catch (e) {}
+  setLook(savedLook, true); syncDark();
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syncDark);
+  new MutationObserver(syncDark).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   $('#flowlinks').innerHTML = FLOWS.map(([l], k) => `<button onclick="FLOWS[${k}][1]()">${l}</button>`).join('');
   applyLayout(); render();
 })();
