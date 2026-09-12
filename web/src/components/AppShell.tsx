@@ -12,8 +12,8 @@ const TABS = [
   { key: "more", ic: "☰", path: "/more" },
 ];
 const ADD = [
-  ["📍", "Place", "/map"], ["📅", "Activity", "/plan/new"], ["🏨", "Booking", "/inbox"], ["💰", "Expense", "/money/new"], ["🧾", "Receipt", "/money/scan"],
-  ["📄", "Document", "/inbox"], ["🗳", "Decision", "/decisions/new"], ["📝", "Note", "/notes/new"], ["🎤", "Voice", "/money/new?voice=1"], ["📷", "Photo", "/inbox"],
+  ["📍", "place", "/map"], ["📅", "activity", "/plan/new"], ["🏨", "booking", "/inbox"], ["💰", "expense", "/money/new"], ["🧾", "receipt", "/money/scan"],
+  ["📄", "document", "/inbox"], ["🗳", "decision", "/decisions/new"], ["📝", "note", "/notes/new"], ["🎤", "voice", "/money/new?voice=1"], ["📷", "photo", "/inbox"],
 ] as const;
 
 export function AppShell({ tripId, children }: { tripId: string; children: React.ReactNode }) {
@@ -37,7 +37,7 @@ export function AppShell({ tripId, children }: { tripId: string; children: React
             <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-line" />
             <h2 className="text-[20px]">{t("nav.add")}</h2>
             <div className="mt-4 grid grid-cols-5 gap-2">
-              {ADD.map(([e, l, p]) => <Link key={l} href={base + p} onClick={() => setAdd(false)} className="flex flex-col items-center gap-1.5 rounded-2xl bg-surface-2 px-1 py-3 text-[11.5px] font-extrabold text-ink-2"><span className="text-[24px]">{e}</span>{l}</Link>)}
+              {ADD.map(([e, l, p]) => <Link key={l} href={base + p} onClick={() => setAdd(false)} className="flex flex-col items-center gap-1.5 rounded-2xl bg-surface-2 px-1 py-3 text-[11.5px] font-extrabold text-ink-2"><span className="text-[24px]">{e}</span>{t(`ui.add.${l}`)}</Link>)}
             </div>
           </div>
         </div>

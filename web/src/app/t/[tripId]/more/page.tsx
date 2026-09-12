@@ -20,7 +20,7 @@ export default async function More({ params }: { params: Promise<{ tripId: strin
     <div className="mx-auto max-w-[640px]">
       <PageHead title={t("more.title")} sub={`${b.trip.emoji} ${b.trip.name} · ${dateRange(b.trip, locale)}`} right={<LangSwitch />} />
       <div className="card divide-y divide-line-2 p-0">{rows.map(([e, title, sub, path, badge]) => <Link key={path} href={base + path} className="flex items-center gap-3 px-4 py-3"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface-2 text-[19px]">{e}</span><div className="min-w-0 flex-1"><div className="font-bold">{title}</div>{sub && <div className="truncate text-[13px] text-ink-2">{sub}</div>}</div>{badge ? <span className="rounded-full bg-coral px-1.5 text-[11px] font-extrabold text-white">{badge}</span> : null}<span className="text-ink-3">›</span></Link>)}</div>
-      <div className="mt-4 flex gap-2"><Link href="/trips" className="btn flex-1">Your trips</Link><form action={signOut} className="flex-1"><button className="btn w-full">{t("auth.signout")}</button></form></div>
+      <div className="mt-4 flex gap-2"><Link href="/trips" className="btn flex-1">{t("ui.yourTrips")}</Link><form action={signOut} className="flex-1"><button className="btn w-full">{t("auth.signout")}</button></form></div>
     </div>
   );
 }

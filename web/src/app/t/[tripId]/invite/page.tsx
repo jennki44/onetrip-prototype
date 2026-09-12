@@ -17,7 +17,7 @@ export default async function Invite({ params, searchParams }: { params: Promise
       <div className="mt-3 grid grid-cols-3 gap-2">
         {[["💬", t("invite.whatsapp"), `https://wa.me/?text=${share}`], ["📱", t("invite.sms"), `sms:?&body=${share}`], ["📧", t("invite.email"), `mailto:?subject=${encodeURIComponent(b.trip.name)}&body=${share}`]].map(([e, l, href]) => <a key={l} href={href} target="_blank" rel="noopener" className="card flex flex-col items-center py-3 text-[12.5px] font-extrabold"><span className="text-[24px]">{e}</span>{l}</a>)}
       </div>
-      <div className="card mt-3 divide-y divide-line-2 p-0">{b.members.map(m => <div key={m.user_id} className="flex items-center gap-3 px-4 py-3"><Avatar p={m.profile} /><div className="flex-1"><div className="font-bold">{m.profile.name}</div><div className="text-[13px] capitalize text-ink-2">{m.role}</div></div><Pill tone="good">{t("invite.joined")}</Pill></div>)}</div>
+      <div className="card mt-3 divide-y divide-line-2 p-0">{b.members.map(m => <div key={m.user_id} className="flex items-center gap-3 px-4 py-3"><Avatar p={m.profile} /><div className="flex-1"><div className="font-bold">{m.profile.name}</div><div className="text-[13px] text-ink-2">{t(`ui.roles.${m.role}`)}</div></div><Pill tone="good">{t("invite.joined")}</Pill></div>)}</div>
       <Link href={base} className="btn btn-sun mt-4 w-full py-4 text-[16px]">{t("invite.goToTrip")}</Link>
       <p className="mt-3 text-center text-[12.5px] text-ink-3">{t("invite.preview")}</p>
     </div>

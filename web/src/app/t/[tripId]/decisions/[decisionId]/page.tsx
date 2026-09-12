@@ -42,18 +42,18 @@ export default async function DecisionDetail({ params }: { params: Promise<{ tri
               <div className="mb-2 text-[16px] font-bold">{t("decisions.strongest", { name: name(lead) })}</div>
               <div className="text-[12.5px] font-bold text-ink-2">{t("decisions.why")}</div>
               <ul className="mt-1 list-disc pl-5 text-[14px] text-ink-2">
-                <li>{b.votes.filter(v => v.option_id === lead.id && (v.reaction === "love" || v.reaction === "good")).length} of {b.members.length} people like it ({b.votes.filter(v => v.option_id === lead.id && v.reaction === "love").length} love, {b.votes.filter(v => v.option_id === lead.id && v.reaction === "good").length} good)</li>
-                {place(b, lead.place_id)?.rating ? <li>Rated {place(b, lead.place_id)!.rating} ⭐ · {place(b, lead.place_id)!.from_hotel_min} min away</li> : null}
-                <li>{spentCat + lead.est_pp_minor * b.members.length <= budCat ? `Within the ${d.category.toLowerCase()} budget (${inCurrency(b, budCat - spentCat, rc)} left before this)` : `Would take ${d.category.toLowerCase()} about ${inCurrency(b, spentCat + lead.est_pp_minor * b.members.length - budCat, rc)} over its budget`}</li>
+                <li>{t("ui.likeIt", { n: b.votes.filter(v => v.option_id === lead.id && (v.reaction === "love" || v.reaction === "good")).length, total: b.members.length, love: b.votes.filter(v => v.option_id === lead.id && v.reaction === "love").length, good: b.votes.filter(v => v.option_id === lead.id && v.reaction === "good").length })}</li>
+                {place(b, lead.place_id)?.rating ? <li>{t("ui.rated", { r: place(b, lead.place_id)!.rating!, min: place(b, lead.place_id)!.from_hotel_min || 0 })}</li> : null}
+                <li>{spentCat + lead.est_pp_minor * b.members.length <= budCat ? t("ui.withinBudget", { cat: t(`money.categories.${d.category}`), left: inCurrency(b, budCat - spentCat, rc) }) : t("ui.overBudget", { cat: t(`money.categories.${d.category}`), over: inCurrency(b, spentCat + lead.est_pp_minor * b.members.length - budCat, rc) })}</li>
               </ul>
-              {second && <p className="mt-2 text-[12.5px] text-ink-2">It costs approximately <b>{inCurrency(b, Math.abs(lead.est_pp_minor - second.est_pp_minor), rc)} {lead.est_pp_minor >= second.est_pp_minor ? "more" : "less"} per person</b> than {name(second)}.</p>}
-              <p className="mt-2 text-[12px] text-ink-3">Assumes {b.members.length} people. Nothing changes until you confirm.</p>
+              {second && <p className="mt-2 text-[12.5px] text-ink-2">{t("ui.costsMore", { amount: inCurrency(b, Math.abs(lead.est_pp_minor - second.est_pp_minor), rc), dir: t(lead.est_pp_minor >= second.est_pp_minor ? "ui.more" : "ui.less"), name: name(second) })}</p>}
+              <p className="mt-2 text-[12px] text-ink-3">{t("ui.assumes", { n: b.members.length })}</p>
               <div className="mt-3 flex gap-2">
                 <form action={confirmDecision} className="flex-1"><input type="hidden" name="tripId" value={tripId} /><input type="hidden" name="decisionId" value={d.id} /><input type="hidden" name="optionId" value={lead.id} /><button className="btn btn-sun w-full" disabled={!canManage && voters.size < b.members.length - 1}>{t("decisions.confirmX", { name: name(lead) })}</button></form>
                 <form action={keepVoting}><input type="hidden" name="tripId" value={tripId} /><button className="btn">{t("decisions.keepVoting")}</button></form>
               </div>
             </div>)}
-          {today > 0 && d.day && d.day < today && !confirmed && <p className="mt-3 text-[12.5px] text-warn">This decision&apos;s day has passed.</p>}
+          {today > 0 && d.day && d.day < today && !confirmed && <p className="mt-3 text-[12.5px] text-warn">{t("ui.dayPassed")}</p>}
         </div>
       </div>
     </div>

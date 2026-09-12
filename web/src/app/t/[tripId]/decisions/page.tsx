@@ -14,7 +14,7 @@ export default async function Decisions({ params }: { params: Promise<{ tripId: 
   const name = (oid: string) => { const o = b.options.find(x => x.id === oid); return o ? (o.place_id ? place(b, o.place_id)?.name : o.label) || "" : ""; };
   return (
     <div>
-      <PageHead title={t("decisions.title")} sub={t("decisions.sub")} right={<Link href={`${base}/decisions/new`} className="btn btn-sun btn-sm">+ New</Link>} />
+      <PageHead title={t("decisions.title")} sub={t("decisions.sub")} right={<Link href={`${base}/decisions/new`} className="btn btn-sun btn-sm">{t("ui.newBtn")}</Link>} />
       {open.length ? <div className="flex flex-col gap-3 md:grid md:grid-cols-2">{open.map(d => { const n = votersOf(b, d).size; const opts = b.options.filter(o => o.decision_id === d.id); const lead = leadingOption(b, d); const mine = b.votes.some(v => v.decision_id === d.id && v.user_id === user?.id); const est = opts.map(o => o.est_pp_minor); return (
         <Link key={d.id} href={`${base}/decisions/${d.id}`} className="card block">
           <div className="flex items-start justify-between gap-2"><div><div className="text-[16px] font-bold">{d.title}</div><div className="text-[12.5px] text-ink-3">{d.question}</div></div><Pill tone="warn">{n >= b.members.length - 1 ? t("decisions.almost") : t("decisions.needsVotes")}</Pill></div>

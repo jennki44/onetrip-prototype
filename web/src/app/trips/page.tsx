@@ -14,7 +14,7 @@ export default async function Trips() {
         {trips.map(({ trip, role }) => (
           <Link key={trip.id} href={`/t/${trip.id}`} className="card flex items-center gap-3 transition active:scale-[.985]">
             {trip.cover_url ? <img src={trip.cover_url} alt="" className="h-16 w-16 rounded-2xl object-cover" /> : <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-teal-soft text-[30px]">{trip.emoji}</span>}
-            <div className="min-w-0 flex-1"><div className="font-display text-[17px] font-bold">{trip.name}</div><div className="text-[13px] text-ink-2">{trip.destination} · {dateRange(trip, locale)}</div><span className="pill pill-teal mt-1 capitalize">{role}</span></div>
+            <div className="min-w-0 flex-1"><div className="font-display text-[17px] font-bold">{trip.name}</div><div className="text-[13px] text-ink-2">{trip.destination} · {dateRange(trip, locale)}</div><span className="pill pill-teal mt-1">{t(`ui.roles.${role}`)}</span></div>
             <span className="text-ink-3">›</span>
           </Link>
         ))}

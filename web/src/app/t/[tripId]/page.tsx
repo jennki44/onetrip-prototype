@@ -23,7 +23,7 @@ export default async function TripHome({ params }: { params: Promise<{ tripId: s
         <div>
           <div className="eyebrow">{b.trip.emoji} {b.trip.name} · {b.members.length} {t("common.travellers")}</div>
           <h1 className="text-[28px] leading-tight">{b.trip.destination.split(",")[0]}</h1>
-          <p className="text-[14.5px] text-ink-2">{dateRange(b.trip, locale)}{!before && !after ? ` · ${t("common.day")} ${day} ${t("common.of")} ${total}${dayInfo?.theme ? ` · ${dayInfo.theme}` : ""}` : before ? ` · starts in ${Math.ceil((new Date(b.trip.start_date + 'T00:00:00').getTime() - now.getTime()) / 86400000)} days` : " · completed"}</p>
+          <p className="text-[14.5px] text-ink-2">{dateRange(b.trip, locale)}{!before && !after ? ` · ${t("common.day")} ${day} ${t("common.of")} ${total}${dayInfo?.theme ? ` · ${dayInfo.theme}` : ""}` : before ? ` · ${t("ui.startsIn", { n: Math.ceil((new Date(b.trip.start_date + "T00:00:00").getTime() - now.getTime()) / 86400000) })}` : ` · ${t("ui.completed")}`}</p>
         </div>
         <Link href={`${base}/travellers`}><Avatars people={b.members.map(m => m.profile)} /></Link>
       </div>
@@ -31,7 +31,7 @@ export default async function TripHome({ params }: { params: Promise<{ tripId: s
       <div className="md:grid md:grid-cols-[1.15fr_.85fr] md:gap-6">
         <div>
           <div className="card-hero">
-            <div className="flex items-center justify-between"><span className="eyebrow text-white/85">{before ? "Day 1" : t("home.next")}</span><span className="text-[12px] text-white/85">{!before && !after ? dayLabel(b.trip, day, locale) : ""}</span></div>
+            <div className="flex items-center justify-between"><span className="eyebrow text-white/85">{before ? t("ui.dayN", { n: 1 }) : t("home.next")}</span><span className="text-[12px] text-white/85">{!before && !after ? dayLabel(b.trip, day, locale) : ""}</span></div>
             {(() => { const n = before ? (b.items.filter(i => i.day === 1).sort((x, y) => x.start_time.localeCompare(y.start_time))[0] || null) : next; if (!n) return <p className="mt-2 text-white/90">{t("home.nothingElse")}</p>; const ph = photoOf(b, n); const pl = place(b, n.place_id); return (
               <Link href={`${base}/plan/${n.id}`} className="mt-2 flex items-center gap-3.5">
                 {ph ? <img src={ph} alt="" className="h-16 w-16 rounded-2xl object-cover ring-2 ring-white/40" /> : <span className="text-[40px]">{n.emoji}</span>}
@@ -87,7 +87,7 @@ export default async function TripHome({ params }: { params: Promise<{ tripId: s
               {checks.slice(0, 5).map((c, k) => <Link key={k} href={c.link} className="flex items-center gap-3 px-4 py-3"><span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: `var(--${c.tone})` }} /><span className="min-w-0 flex-1 truncate text-[14.5px] font-semibold">{c.text}</span><span className="text-ink-3">›</span></Link>)}
             </div>
           </section>
-          {b.notes.length > 0 && <section className="mt-5"><Eyebrow>Notes</Eyebrow><div className="card divide-y divide-line-2 p-0">{b.notes.map(n => <div key={n.id} className="px-4 py-3 text-[14.5px]">📝 {n.text}</div>)}</div></section>}
+          {b.notes.length > 0 && <section className="mt-5"><Eyebrow>{t("ui.notes")}</Eyebrow><div className="card divide-y divide-line-2 p-0">{b.notes.map(n => <div key={n.id} className="px-4 py-3 text-[14.5px]">📝 {n.text}</div>)}</div></section>}
         </div>
       </div>
     </div>

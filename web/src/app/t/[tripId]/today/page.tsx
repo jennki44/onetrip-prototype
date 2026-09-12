@@ -26,7 +26,7 @@ export default async function Today({ params }: { params: Promise<{ tripId: stri
       </Link></section>) : null;
   return (
     <div>
-      <PageHead title={t("today.now") === "Now" ? "Today" : "今日"} sub={day >= 1 ? dayLabel(b.trip, day, locale, true) : dayLabel(b.trip, 1, locale, true)} right={<Link href={`${base}/travel`} className="btn btn-outline btn-sm">🧭 {t("home.travelMode")}</Link>} />
+      <PageHead title={t("common.today")} sub={day >= 1 ? dayLabel(b.trip, day, locale, true) : dayLabel(b.trip, 1, locale, true)} right={<Link href={`${base}/travel`} className="btn btn-outline btn-sm">🧭 {t("home.travelMode")}</Link>} />
       <div className="md:grid md:grid-cols-2 md:gap-6">
         <div>
           {current ? block(t("today.now"), current, `${t("common.done")} ${fmtTime(current.end_time || current.start_time, locale)}`) : <section className="mt-5"><Eyebrow>{t("today.now")}</Eyebrow><div className="card bg-surface-2 shadow-none"><b>{next ? t("today.free", { time: fmtTime(next.start_time, locale) }) : t("today.nothing")}</b></div></section>}
