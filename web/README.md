@@ -44,3 +44,14 @@ npm run lint
 - `src/lib/brain` Trip Brain answers computed from trip data.
 - `src/lib/i18n` dictionaries and hooks.
 - `supabase/migrations` schema and policies; `supabase/seed.sql` demo trip.
+
+## If Docker Desktop shows "An unexpected error occurred … remove …: The file cannot be accessed by the system"
+
+Docker leaves Unix-socket files behind that Windows cannot delete one by one. Quit Docker Desktop, then rename the folders that hold them and relaunch:
+
+```powershell
+Rename-Item "$env:LOCALAPPDATA\Docker\run" "run.broken"
+Rename-Item "$env:LOCALAPPDATA\docker-secrets-engine" "docker-secrets-engine.broken"
+```
+
+Docker recreates both on the next start. No factory reset is needed.
