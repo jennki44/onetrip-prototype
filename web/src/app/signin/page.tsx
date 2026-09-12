@@ -8,7 +8,7 @@ import { DEMO_USERS } from "@/lib/demo";
 export default async function SignIn({ searchParams }: { searchParams: Promise<{ next?: string; sent?: string; demo?: string; error?: string }> }) {
   const sp = await searchParams;
   if (await currentUser()) redirect(sp.next || "/trips");
-  const { t } = await getT();
+  const { t } = await getT(); const demo = process.env.ONETRIP_DEMO === "1";
   return (
     <div className="mx-auto w-full max-w-[440px] px-6 pt-10">
       <Link href="/" className="text-[14px] font-extrabold text-ink-2">‹ {t("common.back")}</Link>
@@ -23,14 +23,14 @@ export default async function SignIn({ searchParams }: { searchParams: Promise<{
           {sp.error && <p className="text-[13px] text-bad">{sp.error}</p>}
         </form>
       )}
-      <div className="my-6 flex items-center gap-3 text-[12px] text-ink-3"><span className="h-px flex-1 bg-line" />demo<span className="h-px flex-1 bg-line" /></div>
+      {demo && <><div className="my-6 flex items-center gap-3 text-[12px] text-ink-3"><span className="h-px flex-1 bg-line" />demo<span className="h-px flex-1 bg-line" /></div>
       <form action={signInDemo} className="flex flex-col gap-2">
         <input type="hidden" name="next" value={sp.next || ""} />
         <p className="text-[13px] text-ink-2">Sign in as one of the Sydney family to explore the seeded trip.</p>
         <div className="grid grid-cols-2 gap-2">
           {Object.entries(DEMO_USERS).map(([k, u]) => <button key={k} name="who" value={u.email} className={`btn ${k === "jennie" ? "btn-sun" : "btn-outline"} capitalize`}>{k}</button>)}
         </div>
-      </form>
+      </form></>}
     </div>
   );
 }

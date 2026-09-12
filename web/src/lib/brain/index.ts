@@ -11,7 +11,7 @@ const DAYNAMES: Record<string, number> = { sunday: 0, monday: 1, tuesday: 2, wed
 
 export function answer(b: TripBundle, q: string, ctx: { today: number; me: string; rc: string; locale: string; base: string }): Answer {
   const l = q.toLowerCase(); const { today, me, rc, locale, base } = ctx; const money = (m: number, d?: number) => inCurrency(b, m, rc, d != null ? { decimals: d } : undefined);
-  const name = (id: string) => b.members.find(m => m.user_id === id)?.profile.name || "someone";
+  const name = (id: string) => esc(b.members.find(m => m.user_id === id)?.profile.name || "someone");
   const dayFor = (offset: number) => Math.min(dayCount(b.trip), Math.max(1, (today >= 1 ? today : 1) + offset));
   if (l.includes("food") || l.includes("eat")) {
     const cats = spentByCategory(b); const food = b.expenses.filter(e => e.category === "Food"); const fb = catBudgetBase(b, "Food"); const left = fb - (cats.Food || 0); const daysLeft = Math.max(1, dayCount(b.trip) - Math.max(today, 0) + 1);
@@ -24,7 +24,7 @@ export function answer(b: TripBundle, q: string, ctx: { today: number; me: strin
   if (l.includes("owe")) {
     const net = netBalances(b); const pl = plan(b); const toMe = pl.filter(p => p.toUserId === me), fromMe = pl.filter(p => p.fromUserId === me);
     const head = toMe.length ? `<b>${toMe.map(p => `${name(p.fromUserId)} owes you ${money(p.amountMinor)}`).join(", ")}.</b>` : fromMe.length ? `You owe <b>${fromMe.map(p => `${name(p.toUserId)} ${money(p.amountMinor)}`).join(", ")}</b>.` : `<b>Nobody owes you anything right now.</b>`;
-    return { html: head + tbl(b.members.map(m => [m.profile.name, Math.abs(net[m.user_id] || 0) < 1 ? "Settled" : `${net[m.user_id] > 0 ? "is owed" : "owes"} ${money(Math.abs(net[m.user_id]))}`])) + `<p class="mt-2">${pl.length} payment${pl.length === 1 ? "" : "s"} would clear everything.</p>`, actions: [{ label: "See balances", href: `${base}/money?tab=balances` }] };
+    return { html: head + tbl(b.members.map(m => [esc(m.profile.name), Math.abs(net[m.user_id] || 0) < 1 ? "Settled" : `${net[m.user_id] > 0 ? "is owed" : "owes"} ${money(Math.abs(net[m.user_id]))}`])) + `<p class="mt-2">${pl.length} payment${pl.length === 1 ? "" : "s"} would clear everything.</p>`, actions: [{ label: "See balances", href: `${base}/money?tab=balances` }] };
   }
   if (l.includes("book")) {
     const need = b.items.filter(i => i.booking === "needed" && i.status !== "cancelled"); const done = b.bookings.filter(x => x.status === "confirmed").map(x => esc(x.title.split(" · ")[0]));
@@ -41,7 +41,7 @@ export function answer(b: TripBundle, q: string, ctx: { today: number; me: strin
   if (l.includes("budget") || l.includes("spent") || l.includes("spend")) {
     const spent = spentBase(b), bud = budgetBase(b), fc = forecastBase(b, today); const cats = spentByCategory(b);
     const head = bud == null ? `You've spent <b>${money(spent, 0)}</b> so far. No budget is set yet.` : fc > bud ? `<b>Forecast is about ${money(fc - bud, 0)} over the budget.</b>` : `<b>On track: forecast is ${money(bud - fc, 0)} under the budget.</b>`;
-    return { html: head + tbl([["Budget", bud != null ? money(bud, 0) : "—"], ["Spent so far", money(spent, 0)], ["Committed, not yet paid", money(committedBase(b, today), 0)], ["Forecast", money(fc, 0)], ...Object.entries(cats).filter(([, v]) => v).sort((x, y) => y[1] - x[1]).map(([k, v]) => [`· ${k}`, money(v, 0)] as [string, string])]), note: `Assumes ${b.members.length} people and no new plans`, actions: [{ label: "Open Money", href: `${base}/money` }] };
+    return { html: head + tbl([["Budget", bud != null ? money(bud, 0) : "—"], ["Spent so far", money(spent, 0)], ["Committed, not yet paid", money(committedBase(b, today), 0)], ["Forecast", money(fc, 0)], ...Object.entries(cats).filter(([, v]) => v).sort((x, y) => y[1] - x[1]).map(([k, v]) => [`· ${esc(k)}`, money(v, 0)] as [string, string])]), note: `Assumes ${b.members.length} people and no new plans`, actions: [{ label: "Open Money", href: `${base}/money` }] };
   }
   const dayWord = Object.keys(DAYNAMES).find(k => l.includes(k));
   if (dayWord) { const d = Array.from({ length: dayCount(b.trip) }, (_, i) => i + 1).find(x => { const dt = new Date(b.trip.start_date + "T00:00:00"); dt.setDate(dt.getDate() + x - 1); return dt.getDay() === DAYNAMES[dayWord]; }); if (d) { const items = itemsOnDay(b, d); const gaps: string[] = []; for (let k = 1; k < items.length; k++) { const g = minutes(items[k].start_time) - minutes(items[k - 1].end_time || items[k - 1].start_time); if (g >= 60) gaps.push(`${fmtTime(items[k - 1].end_time || items[k - 1].start_time, locale)}–${fmtTime(items[k].start_time, locale)}`); } return { html: `<b>${dayLabel(b.trip, d, locale, true)}</b> has ${items.length} plans.${tbl(items.map(i => [`${i.emoji} ${fmtTime(i.start_time, locale)} ${esc(i.title)}`, esc(place(b, i.place_id)?.area || "")]))}<p class="mt-2">${gaps.length ? `Free windows: ${gaps.join(", ")}.` : "No gaps of an hour or more."}</p>`, actions: [{ label: "Open that day", href: `${base}/plan?day=${d}` }] }; } }

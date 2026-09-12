@@ -32,6 +32,8 @@ export async function confirmDecision(form: FormData) {
   const d = b.decisions.find(x => x.id === p.decisionId); const o = b.options.find(x => x.id === p.optionId); if (!d || !o) redirect(`/t/${p.tripId}/decisions`);
   const pl = place(b, o.place_id); const optName = (pl ? pl.name : o.label) || "Option";
   const members = b.members.map(m => m.user_id); const cost = o.est_pp_minor * members.length;
+  const { data: allowed } = await sb.rpc("can_confirm_decision", { d: d.id });
+  if (!allowed) redirect(`/t/${p.tripId}/decisions/${d.id}?error=notyet`);
   await sb.from("decisions").update({ status: "confirmed", confirmed_option_id: o.id }).eq("id", d.id);
   const existing = b.items.find(i => i.decision_id === d.id);
   let itemId = existing?.id; const day = existing?.day ?? d.day ?? 1; const start = existing?.start_time?.slice(0, 5) ?? d.slot?.slice(0, 5) ?? "19:00";

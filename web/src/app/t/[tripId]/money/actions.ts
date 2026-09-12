@@ -34,6 +34,7 @@ export async function createExpense(raw: ExpenseInput) {
   else if (p.split === "shares") shares = splitShares(baseMinor, Object.fromEntries(p.participants.map(id => [id, p.splitValues?.[id] || 1])));
   else if (p.split === "amounts") { const factor = baseMinor / amountMinor; shares = Object.fromEntries(p.participants.map(id => [id, Math.round(toMinor(p.splitValues?.[id] || 0, p.currency) * factor)])); const sum = Object.values(shares).reduce((a, v) => a + v, 0); if (Math.abs(sum - baseMinor) > p.participants.length) throw new Error("Amounts do not add up to the total"); }
   else { const items = (p.items || []).map(it => ({ amountMinor: Math.round(toMinor(it.amount, p.currency) * baseMinor / amountMinor), userIds: it.userIds })); shares = splitItemised(items, 0); const sum = Object.values(shares).reduce((a, v) => a + v, 0); if (Math.abs(sum - baseMinor) > items.length + 1) throw new Error("Items do not add up to the total"); }
+  if (p.receiptImagePath && !p.receiptImagePath.startsWith(`${p.tripId}/`)) throw new Error("Bad storage path");
   let receiptId: string | null = null;
   if (p.split === "itemised" && p.items?.length) {
     const { data: rc } = await sb.from("receipts").insert({ trip_id: p.tripId, merchant: p.merchant, date: p.date, subtotal_minor: amountMinor, total_minor: amountMinor, currency: p.currency, image_path: p.receiptImagePath || null, created_by: user.id }).select("id").single();

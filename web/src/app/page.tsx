@@ -8,7 +8,7 @@ import { LangSwitch } from "@/components/LangSwitch";
 export default async function Welcome() {
   const user = await currentUser();
   if (user) redirect("/trips");
-  const { t } = await getT();
+  const { t } = await getT(); const demo = process.env.ONETRIP_DEMO === "1";
   const fragments = ["WhatsApp", "Google Maps", "Notes", "Spreadsheet", "Calendar", "Email", "Splitwise", "Booking sites", "Camera roll"];
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-[520px] flex-col justify-end px-7 pb-10 pt-8">
@@ -27,7 +27,7 @@ export default async function Welcome() {
       <div className="flex flex-col gap-3">
         <Link href="/signin?next=/new" className="btn btn-sun w-full py-4 text-[16px]">{t("welcome.create")}</Link>
         <Link href="/join" className="btn btn-outline w-full py-4 text-[16px]">{t("welcome.join")}</Link>
-        <p className="mt-2 text-center text-[12.5px] text-ink-3"><Link href="/signin" className="font-extrabold text-teal-text">{t("welcome.signin")}</Link> · <Link href="/signin?demo=1" className="font-extrabold text-teal-text">{t("welcome.demo")}</Link></p>
+        <p className="mt-2 text-center text-[12.5px] text-ink-3"><Link href="/signin" className="font-extrabold text-teal-text">{t("welcome.signin")}</Link>{demo && <> · <Link href="/signin?demo=1" className="font-extrabold text-teal-text">{t("welcome.demo")}</Link></>}</p>
       </div>
     </div>
   );
