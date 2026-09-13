@@ -13,7 +13,7 @@ export default async function Join({ searchParams }: { searchParams: Promise<{ c
   return (
     <div className="mx-auto w-full max-w-[440px] px-6 pt-8">
       <div className="mb-4"><Logo size={36} /></div>
-      <Link href="/" className="text-[0.875rem] font-extrabold text-ink-2">‹ {t("common.back")}</Link>
+      <Link href="/" className="btn btn-sm">‹ {t("common.back")}</Link>
       <h1 className="mt-3 text-[1.75rem]">{t("join.title")}</h1><p className="mb-4 text-ink-2">{t("join.sub")}</p>
       <form method="get" className="flex gap-2"><input name="code" defaultValue={sp.code || ""} className="input font-mono text-center text-[1.375rem] uppercase tracking-[.15em]" placeholder="SYDNEY-26" maxLength={12} /><button className="btn btn-teal">{t("join.preview")}</button></form>
       {sp.error && <p className="mt-2 text-[0.8125rem] text-bad">{sp.error}</p>}

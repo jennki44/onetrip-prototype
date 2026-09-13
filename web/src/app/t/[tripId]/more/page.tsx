@@ -12,7 +12,7 @@ export default async function More({ params }: { params: Promise<{ tripId: strin
   const { tripId } = await params; const [b, { t, locale }, user] = await Promise.all([loadTrip(tripId), getT(), currentUser()]); if (!b) notFound();
   const base = `/t/${tripId}`; const unread = b.notifications.filter(n => !n.read_by.includes(user?.id || "")).length; const open = b.decisions.filter(d => d.status !== "confirmed").length;
   const rows: [string, string, string, string, number?][] = [
-    ["🗳️", t("decisions.title"), open ? `${open} open` : t("decisions.decided"), "/decisions", open], ["✨", t("brain.title"), t("brain.sub").split(".")[0], "/brain"], ["🩺", t("health.title"), "", "/health"], ["📥", t("inbox.title"), t("inbox.sub"), "/inbox"],
+    ["🗳️", t("decisions.title"), open ? t("decisions.openN", { n: open }) : t("decisions.decided"), "/decisions", open], ["✨", t("brain.title"), t("brain.sub").split(".")[0], "/brain"], ["🩺", t("health.title"), "", "/health"], ["📥", t("inbox.title"), t("inbox.sub"), "/inbox"],
     ["🔔", t("more.notifications"), unread ? `${unread}` : "", "/notifications", unread], ["🎟️", t("more.bookings"), `${b.bookings.length}`, "/bookings"], ["📄", t("more.documents"), `${b.documents.length}`, "/documents"], ["👥", t("more.travellers"), `${b.members.length}`, "/travellers"],
     ["🕘", t("more.history"), "", "/history"], ["📸", t("more.memories"), "", "/memories"], ["🧭", t("travel.title"), "", "/travel"], ["⚙️", t("more.settings"), "", "/settings"], ["👤", t("account.title"), user?.email || "", `/account?next=${base}/more`], ["💬", t("more.feedback"), "", "/feedback"],
   ];

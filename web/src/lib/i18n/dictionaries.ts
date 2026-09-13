@@ -3,7 +3,7 @@
 
 const en = {
   app: { name: "OneTRIP", tagline: "One trip. Everyone together.", sub: "Plan, decide, spend and travel together in one shared trip." },
-  nav: { today: "Today", plan: "Plan", map: "Map", money: "Money", more: "More", add: "Add to trip" },
+  nav: { today: "Today", plan: "Plan", map: "Map", money: "Money", more: "More", add: "Add" },
   common: {
     save: "Save", cancel: "Cancel", back: "Back", done: "Done", edit: "Edit", delete: "Delete", confirm: "Confirm", continue: "Continue",
     people: "people", person: "person", day: "Day", of: "of", travellers: "travellers", loading: "Working on it…",
@@ -12,6 +12,7 @@ const en = {
   welcome: { create: "Create a trip", join: "Join a trip", signin: "Already have an account? Sign in", demo: "Open the demo trip" },
   trips: { title: "Your trips", empty: "No trips yet. Create one or join with a code." },
   auth: { title: "Sign in", email: "Email", magic: "Send me a sign-in link", sent: "Check your email for a sign-in link.", signout: "Sign out", password: "Password", name: "Your name", tabMagic: "Email link", tabPassword: "Password", signin: "Sign in", create: "Create account", createSub: "Family and friends can create their own account with a password.", noAccount: "No account yet? Create one", haveAccount: "Already have an account? Sign in", forgot: "Forgot password?", reset: "Send reset link", resetSent: "Check your email for a link to set a new password.", confirmSent: "Almost there — open the confirmation email, then sign in with your password.", show: "Show", hide: "Hide", min8: "At least 8 characters", back: "Back to sign in", magicHint: "We email you a link — no password to remember.", passwordHint: "Use your email and a password you choose.", exists: "An account with this email already exists. Sign in instead." },
+  dayEdit: { title: "Day details", theme: "Theme", themeHint: "e.g. Harbour day", stay: "Where we sleep", drive: "Driving", caption: "Caption", rule: "Reminder for the day", ruleHint: "Pinned at the top of the day, e.g. Leave the car at the hotel", photo: "Day photo", upload: "📷 Upload a photo", fromPlans: "Or pick one from the day's plans", none: "No photo yet", save: "Save day", add: "Add a photo and theme for this day", edit: "Edit day", remove: "Remove photo", badPhoto: "That photo could not be used. Upload it here instead." },
   tripEdit: { title: "Trip details", name: "Trip name", destination: "Destination", emoji: "Icon", dates: "Dates", datesHint: "Currently {n} days. Plans stay on their calendar dates when the start moves; extra days are added empty.", drop: "Also delete plans that fall outside the new dates", dropHint: "Leave this off and OneTRIP will refuse the change if any plan would be lost.", save: "Save trip", saved: "Trip updated.", dropped: "{n} plans deleted", outside: "{n} plans fall outside the new dates. Move them first, or tick the box to delete them.", errForm: "Check the form.", errOrder: "End date is before start date.", managersOnly: "Only the trip owner or an admin can change the trip details.", edit: "Edit trip / dates" },
   account: { title: "Your account", name: "Display name", nameSub: "Shown to your travellers on plans, votes and expenses.", initials: "Initials", save: "Save name", saved: "Saved", password: "Password", passwordSub: "Set a password so you can sign in without waiting for an email link.", newPassword: "New password", setPassword: "Save password", passwordSaved: "Password saved. You can sign in with it from now on.", signedInAs: "Signed in as {email}", back: "Back", edit: "Edit", resetHint: "You arrived from a reset link. Choose a new password below." },
   create: {
@@ -39,7 +40,7 @@ const en = {
   plan: { title: "Plan", sub: "Itinerary and calendar — everyone edits the same one.", timeline: "Timeline", calendar: "Calendar", addActivity: "+ Activity", plans: "{n} plans", stay: "Stay", driving: "Driving", noPlans: "Nothing planned for {day}", noPlansSub: "Add an activity or ask Trip Brain for ideas.", travel: "{n} min", drive: "Drive {t}", hrs: "{h} hr {m}", conflict: "arrives late" },
   item: { who: "Who's going", connected: "Connected to this plan", nothingLinked: "Nothing linked yet. Bookings, receipts and votes will show up here.", addReceipt: "Add receipt", map: "Map", bookingMissing: "Booking missing", dropConfirmation: "Drop a confirmation into Trip Inbox", resolve: "Resolve", fromPrevious: "{n} min from the previous stop" },
   status: { idea: "Idea", proposed: "Proposed", voting: "Voting", confirmed: "Confirmed", cancelled: "Cancelled", completed: "Done", booked: "Booked", notBooked: "Not booked" },
-  decisions: {
+  decisions: { openN: "{n} open",
     title: "Group decisions", sub: "Things your group still needs to decide.", needsVotes: "Needs votes", almost: "Almost decided", confirmed: "Confirmed",
     closes: "Closes {date}", decided: "Decided", empty: "Nothing to decide yet.", emptySub: "Save a restaurant or activity and ask your group to vote.", find: "Find something",
     love: "Love", good: "Good", maybe: "Maybe", no: "No", perPerson: "/person", estimated: "Estimated", stillToVote: "still to vote", everyoneVoted: "everyone voted",
@@ -81,7 +82,7 @@ const en = {
     fastest: "Pick the fastest way. Everything ends up in the same place.", scanSub: "Take a photo of the receipt and itemise it.", manualSub: "Type the amount and choose who was there.",
     yourTrips: "Your trips", addNote: "Add a note", addNoteSub: "Notes stay with the trip so everyone can see them.", notePh: "e.g. Bring passports for tax-free shopping",
     notificationsSub: "Only things worth knowing.", markAllRead: "Mark all read",
-    activityName: "Activity name", start: "Start", end: "End", location: "Location", choosePlace: "Choose a place", people: "People", costGroup: "Cost ({cur}, whole group)", status: "Status", noteHint: "Anything the group should know", addToTrip: "Add to trip",
+    activityName: "Activity name", start: "Start", end: "End", location: "Location", choosePlace: "Choose a place", newPlace: "＋ New place…", placeName: "Place name", placeType: "Type", placeAddress: "Address or area", placeAddressHint: "e.g. 1 Bridge Rd, Glebe", placeGeoNote: "We look the address up so the place appears on the map. You can leave it blank.", placeTypes: { restaurant: "Food", activity: "Activity", hotel: "Stay", shopping: "Shopping", transport: "Transport", saved: "Other" }, activityHint: "e.g. Fish and chips at Doyles", editActivity: "Edit activity", people: "People", costGroup: "Cost ({cur}, whole group)", status: "Status", noteHint: "Anything the group should know", addToTrip: "Add to trip",
     noBudget: "No budget set", onGround: "{cur} on the ground", trip: "Trip",
     travellersSub: "Everyone sees the same trip.", inviteBtn: "+ Invite", you: "(you)",
     add: { place: "Place", activity: "Activity", booking: "Booking", expense: "Expense", receipt: "Receipt", document: "Document", decision: "Decision", note: "Note", voice: "Voice", photo: "Photo" },
@@ -97,7 +98,7 @@ export type Dictionary = DeepStrings<typeof en>;
 
 const zhHant: Dictionary = {
   app: { name: "OneTRIP", tagline: "一個行程，大家一齊。", sub: "計劃、決定、使費、旅行 — 全部喺同一個共享行程入面。" },
-  nav: { today: "今日", plan: "行程", map: "地圖", money: "錢", more: "更多", add: "加入行程" },
+  nav: { today: "今日", plan: "行程", map: "地圖", money: "錢", more: "更多", add: "新增" },
   common: {
     save: "儲存", cancel: "取消", back: "返回", done: "完成", edit: "編輯", delete: "刪除", confirm: "確認", continue: "繼續",
     people: "人", person: "人", day: "第", of: "/", travellers: "位旅伴", loading: "處理緊…",
@@ -106,6 +107,7 @@ const zhHant: Dictionary = {
   welcome: { create: "建立行程", join: "加入行程", signin: "已有帳戶？登入", demo: "打開示範行程" },
   trips: { title: "我的行程", empty: "未有行程。建立一個，或者用代碼加入。" },
   auth: { title: "登入", email: "電郵", magic: "傳送登入連結", sent: "請查看電郵入面嘅登入連結。", signout: "登出", password: "密碼", name: "你嘅名", tabMagic: "電郵連結", tabPassword: "密碼", signin: "登入", create: "建立帳戶", createSub: "家人朋友可以用密碼建立自己嘅帳戶。", noAccount: "未有帳戶？建立一個", haveAccount: "已有帳戶？登入", forgot: "唔記得密碼？", reset: "傳送重設連結", resetSent: "請查看電郵，用入面嘅連結設定新密碼。", confirmSent: "差少少 — 打開確認電郵，然後用密碼登入。", show: "顯示", hide: "隱藏", min8: "最少 8 個字", back: "返回登入", magicHint: "我哋會電郵一條連結俾你 — 唔使記密碼。", passwordHint: "用電郵同你自己設定嘅密碼。", exists: "呢個電郵已經有帳戶，請直接登入。" },
+  dayEdit: { title: "日子資料", theme: "主題", themeHint: "例如：海港一日", stay: "住邊度", drive: "駕車", caption: "說明", rule: "當日提醒", ruleHint: "會釘喺當日最上面，例如：車留喺酒店", photo: "當日相片", upload: "📷 上載相片", fromPlans: "或者喺當日安排揀一張", none: "未有相片", save: "儲存", add: "加張相同主題俾呢日", edit: "編輯日子", remove: "移除相片", badPhoto: "呢張相用唔到，請直接喺度上載。" },
   tripEdit: { title: "行程資料", name: "行程名稱", destination: "目的地", emoji: "圖示", dates: "日期", datesHint: "而家共 {n} 日。改開始日期時，安排會跟住原本嘅日曆日期；新加嘅日子會係空白。", drop: "同時刪除超出新日期嘅安排", dropHint: "唔剔呢個，如果有安排會被刪走，OneTRIP 會拒絕修改。", save: "儲存行程", saved: "行程已更新。", dropped: "已刪除 {n} 個安排", outside: "有 {n} 個安排超出新日期。請先搬走佢哋，或者剔選刪除。", errForm: "請檢查表格。", errOrder: "結束日期早過開始日期。", managersOnly: "只有行程擁有者或管理員可以修改行程資料。", edit: "修改行程 / 日期" },
   account: { title: "你嘅帳戶", name: "顯示名稱", nameSub: "旅伴會喺行程、投票同開支見到呢個名。", initials: "簡稱", save: "儲存名稱", saved: "已儲存", password: "密碼", passwordSub: "設定密碼，之後登入唔使等電郵連結。", newPassword: "新密碼", setPassword: "儲存密碼", passwordSaved: "密碼已儲存，以後可以用佢登入。", signedInAs: "登入身份：{email}", back: "返回", edit: "編輯", resetHint: "你係由重設連結入嚟。喺下面設定新密碼。" },
   create: {
@@ -133,7 +135,7 @@ const zhHant: Dictionary = {
   plan: { title: "行程", sub: "行程表同月曆 — 大家編輯同一份。", timeline: "時間線", calendar: "月曆", addActivity: "+ 活動", plans: "{n} 個安排", stay: "住宿", driving: "駕車", noPlans: "{day} 未有安排", noPlansSub: "加個活動，或者問下 Trip Brain 有咩建議。", travel: "{n} 分鐘", drive: "車程 {t}", hrs: "{h} 小時 {m}", conflict: "會遲到" },
   item: { who: "邊個去", connected: "同呢個安排有關", nothingLinked: "未有連結。預訂、收據同投票會喺度顯示。", addReceipt: "加收據", map: "地圖", bookingMissing: "未有預訂", dropConfirmation: "將確認信放入行程收件箱", resolve: "處理", fromPrevious: "由上一站 {n} 分鐘" },
   status: { idea: "構思", proposed: "提議", voting: "投票中", confirmed: "已確認", cancelled: "已取消", completed: "完成", booked: "已預訂", notBooked: "未預訂" },
-  decisions: {
+  decisions: { openN: "{n} 個未決定",
     title: "小組決定", sub: "大家仲要決定嘅事。", needsVotes: "等投票", almost: "差唔多決定", confirmed: "已確認",
     closes: "{date} 截止", decided: "已決定", empty: "暫時冇嘢要決定。", emptySub: "儲存一間餐廳或者活動，叫大家投票。", find: "搵嘢做",
     love: "超鍾意", good: "好", maybe: "考慮下", no: "唔要", perPerson: "/人", estimated: "估計", stillToVote: "未投票", everyoneVoted: "全部已投票",
@@ -175,7 +177,7 @@ const zhHant: Dictionary = {
     fastest: "揀最快嘅方法，最後都會去到同一個地方。", scanSub: "影低收據，逐項分攤。", manualSub: "輸入金額，揀邊個有份。",
     yourTrips: "我的行程", addNote: "加備註", addNoteSub: "備註會留喺行程入面，大家都睇到。", notePh: "例如：退稅購物要帶護照",
     notificationsSub: "只通知值得知道嘅事。", markAllRead: "全部標為已讀",
-    activityName: "活動名稱", start: "開始", end: "結束", location: "地點", choosePlace: "揀一個地點", people: "參與者", costGroup: "費用（{cur}，全組）", status: "狀態", noteHint: "大家需要知道嘅事", addToTrip: "加入行程",
+    activityName: "活動名稱", start: "開始", end: "結束", location: "地點", choosePlace: "揀一個地點", newPlace: "＋ 新地點…", placeName: "地點名稱", placeType: "類型", placeAddress: "地址或地區", placeAddressHint: "例如：1 Bridge Rd, Glebe", placeGeoNote: "我哋會搵吓呢個地址，等地點喺地圖出現。可以留空。", placeTypes: { restaurant: "飲食", activity: "活動", hotel: "住宿", shopping: "購物", transport: "交通", saved: "其他" }, activityHint: "例如：Doyles 食魚薯條", editActivity: "編輯活動", people: "參與者", costGroup: "費用（{cur}，全組）", status: "狀態", noteHint: "大家需要知道嘅事", addToTrip: "加入行程",
     noBudget: "未設定預算", onGround: "當地用 {cur}", trip: "行程",
     travellersSub: "大家睇到同一個行程。", inviteBtn: "+ 邀請", you: "（你）",
     add: { place: "地點", activity: "活動", booking: "預訂", expense: "使費", receipt: "收據", document: "文件", decision: "決定", note: "備註", voice: "語音", photo: "相片" },
