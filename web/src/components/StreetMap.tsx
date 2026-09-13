@@ -11,13 +11,14 @@ export function StreetMap({ pins, route, selected, onSelect }: { pins: Pin[]; ro
   const { t } = useT();
   const box = useRef<HTMLDivElement>(null); const map = useRef<LMap | null>(null); const layer = useRef<LayerGroup | null>(null); const markers = useRef<Map<string, Marker>>(new Map());
   const L = useRef<typeof import("leaflet") | null>(null); const [ready, setReady] = useState(false); const me = useRef<Marker | null>(null);
+  const [locate, setLocate] = useState<"idle" | "busy" | "error" | "denied">("idle");
   const select = useRef(onSelect); useEffect(() => { select.current = onSelect; });
 
   useEffect(() => {
     let alive = true;
     import("leaflet").then(mod => {
       if (!alive || !box.current || map.current) return; L.current = mod;
-      const m = mod.map(box.current, { zoomControl: false, attributionControl: true, tap: true } as unknown as import("leaflet").MapOptions).setView([-33.87, 151.21], 11);
+      const m = mod.map(box.current, { zoomControl: false, attributionControl: true }).setView([-33.87, 151.21], 11);
       mod.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>' }).addTo(m);
       mod.control.zoom({ position: "bottomright" }).addTo(m);
       map.current = m; layer.current = mod.layerGroup().addTo(m); setReady(true);
@@ -47,18 +48,29 @@ export function StreetMap({ pins, route, selected, onSelect }: { pins: Pin[]; ro
     m.flyTo([p.lat, p.lng], Math.max(m.getZoom(), 14), { duration: 0.6 });
   }, [ready, selected, pins]);
 
-  const locate = () => {
+  /** Where am I: asks the phone directly so we control the timeout and can explain a refusal. */
+  const findMe = () => {
     const mod = L.current, m = map.current; if (!mod || !m) return;
-    m.locate({ setView: true, maxZoom: 15 }).once("locationfound", e => {
+    if (!("geolocation" in navigator)) { setLocate("error"); return; }
+    setLocate("busy");
+    navigator.geolocation.getCurrentPosition(pos => {
+      const ll: [number, number] = [pos.coords.latitude, pos.coords.longitude];
       if (me.current) me.current.remove();
       const el = document.createElement("div"); el.className = "me-dot";
-      me.current = mod.marker(e.latlng, { icon: mod.divIcon({ html: el, className: "", iconSize: [18, 18], iconAnchor: [9, 9] }), title: "You", zIndexOffset: 1000 }).addTo(m);
-    });
+      me.current = mod.marker(ll, { icon: mod.divIcon({ html: el, className: "", iconSize: [18, 18], iconAnchor: [9, 9] }), title: "You", zIndexOffset: 1000 }).addTo(m);
+      m.flyTo(ll, Math.max(m.getZoom(), 15), { duration: 0.8 }); setLocate("idle");
+    }, err => { setLocate(err.code === err.PERMISSION_DENIED ? "denied" : "error"); }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 30000 });
   };
   return (
     <div className="relative overflow-hidden rounded-[28px] shadow-card">
       <div ref={box} className="h-[60vh] min-h-[360px] w-full md:h-[68vh]" role="application" aria-label="Street map of trip places" />
-      <button type="button" onClick={locate} className="map-btn left-3 top-3">{t("ui.map.locate")}</button>
+      <button type="button" onClick={findMe} disabled={locate === "busy"} aria-busy={locate === "busy"} className="map-btn left-3 top-3">{locate === "busy" ? t("ui.map.locating") : t("ui.map.locate")}</button>
+      {(locate === "error" || locate === "denied") && (
+        <div role="alert" className="absolute inset-x-3 top-16 z-[1] rounded-2xl bg-surface p-3 text-[0.9rem] font-bold shadow-lift">
+          {locate === "denied" ? t("ui.map.locateDenied") : t("ui.map.locateFail")}
+          <button type="button" onClick={() => setLocate("idle")} className="ml-2 text-teal-text">OK</button>
+        </div>
+      )}
     </div>
   );
 }
