@@ -2,15 +2,18 @@ import Link from "next/link";
 import { myTrips } from "@/lib/trip/load";
 import { getT } from "@/lib/i18n/server";
 import { dateRange } from "@/lib/trip/derive";
-import { signOut } from "../signin/actions";
 import { LangSwitch } from "@/components/LangSwitch";
 import { Logo } from "@/components/Logo";
+import { UserMenu } from "@/components/UserMenu";
+import { currentUser, supabaseServer } from "@/lib/supabase/server";
+import type { Profile } from "@/lib/supabase/types";
 
 export default async function Trips() {
-  const [trips, { t, locale }] = await Promise.all([myTrips(), getT()]);
+  const [trips, { t, locale }, user, sb] = await Promise.all([myTrips(), getT(), currentUser(), supabaseServer()]);
+  const { data: profile } = (user ? await sb.from("profiles").select("name, initials, color").eq("id", user.id).maybeSingle() : { data: null }) as { data: Pick<Profile, "name" | "initials" | "color"> | null };
   return (
     <div className="mx-auto w-full max-w-[640px] px-5 pt-8">
-      <div className="mb-4 flex items-center justify-between"><Logo size={40} href={null} /><LangSwitch /></div>
+      <div className="mb-4 flex items-center justify-between"><Logo size={40} href={null} /><div className="flex items-center gap-2"><LangSwitch />{profile && <UserMenu profile={profile} next="/trips" />}</div></div>
       <h1 className="mb-4 text-[1.75rem]">{t("trips.title")}</h1>
       <div className="flex flex-col gap-3">
         {trips.map(({ trip, role }) => (
@@ -23,7 +26,6 @@ export default async function Trips() {
         {!trips.length && <div className="card text-center text-ink-2">{t("trips.empty")}</div>}
       </div>
       <div className="mt-5 flex gap-3"><Link href="/new" className="btn btn-sun flex-1">{t("welcome.create")}</Link><Link href="/join" className="btn btn-outline flex-1">{t("welcome.join")}</Link></div>
-      <div className="mt-8 flex items-center justify-center gap-5 text-[0.875rem] font-extrabold text-ink-3"><Link href="/account?next=/trips">👤 {t("account.title")}</Link><form action={signOut}><button className="font-extrabold text-ink-3">{t("auth.signout")}</button></form></div>
     </div>
   );
 }

@@ -23,7 +23,7 @@ export default async function TripHome({ params }: { params: Promise<{ tripId: s
         <div>
           <div className="eyebrow">{b.trip.emoji} {b.trip.name} · {b.members.length} {t("common.travellers")}</div>
           <h1 className="text-[1.75rem] leading-tight">{b.trip.destination.split(",")[0]}</h1>
-          <p className="text-[0.9063rem] text-ink-2">{dateRange(b.trip, locale)}{!before && !after ? ` · ${t("common.day")} ${day} ${t("common.of")} ${total}${dayInfo?.theme ? ` · ${dayInfo.theme}` : ""}` : before ? ` · ${t("ui.startsIn", { n: Math.ceil((new Date(b.trip.start_date + "T00:00:00").getTime() - now.getTime()) / 86400000) })}` : ` · ${t("ui.completed")}`}</p>
+          <p className="text-[0.9063rem] text-ink-2"><Link href={`${base}/settings/trip`} className="underline decoration-dotted underline-offset-4">{dateRange(b.trip, locale)}</Link>{!before && !after ? ` · ${t("common.day")} ${day} ${t("common.of")} ${total}${dayInfo?.theme ? ` · ${dayInfo.theme}` : ""}` : before ? ` · ${t("ui.startsIn", { n: Math.ceil((new Date(b.trip.start_date + "T00:00:00").getTime() - now.getTime()) / 86400000) })}` : ` · ${t("ui.completed")}`}</p>
         </div>
         <Link href={`${base}/travellers`}><Avatars people={b.members.map(m => m.profile)} /></Link>
       </div>

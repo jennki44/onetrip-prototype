@@ -14,6 +14,7 @@ export default async function Plan({ params, searchParams }: { params: Promise<{
   const total = dayCount(b.trip); const now = demoNow(b.trip); const todayDay = nowSlots(b, now).day;
   const day = Math.min(total, Math.max(1, Number(sp.day) || (todayDay >= 1 && todayDay <= total ? todayDay : 1)));
   const view = sp.view === "calendar" ? "calendar" : "timeline"; const base = `/t/${tripId}`;
+  const canManage = ["owner", "admin"].includes(b.members.find(m => m.user_id === user?.id)?.role || "");
   const rc = b.members.find(m => m.user_id === user?.id)?.profile.reporting_currency || b.trip.home_currency;
   const items = itemsOnDay(b, day); const info = dayL(b.days.find(d => d.day === day), locale);
   const conflicts = new Set<string>(); for (let k = 1; k < items.length; k++) { const p = items[k - 1], c = items[k]; if (c.travel_min && minutes(p.end_time || p.start_time) + c.travel_min > minutes(c.start_time) + 5) conflicts.add(c.id); }
@@ -21,7 +22,7 @@ export default async function Plan({ params, searchParams }: { params: Promise<{
   const statusTone = (s: string) => (s === "confirmed" ? "good" : s === "voting" ? "warn" : s === "cancelled" ? "bad" : s === "proposed" ? "teal" : undefined);
   return (
     <div>
-      <PageHead title={t("plan.title")} sub={t("plan.sub")} right={<div className="flex rounded-xl bg-surface-2 p-1 text-[0.8438rem] font-extrabold"><Link href={`${base}/plan?day=${day}`} className={`rounded-lg px-3 py-1.5 ${view === "timeline" ? "bg-surface shadow-card" : "text-ink-3"}`}>{t("plan.timeline")}</Link><Link href={`${base}/plan?view=calendar`} className={`rounded-lg px-3 py-1.5 ${view === "calendar" ? "bg-surface shadow-card" : "text-ink-3"}`}>{t("plan.calendar")}</Link></div>} />
+      <PageHead title={t("plan.title")} sub={t("plan.sub")} right={<div className="flex flex-col items-end gap-2">{canManage && <Link href={`${base}/settings/trip`} className="btn btn-sm">✏️ {t("tripEdit.edit")}</Link>}<div className="flex rounded-xl bg-surface-2 p-1 text-[0.8438rem] font-extrabold"><Link href={`${base}/plan?day=${day}`} className={`rounded-lg px-3 py-1.5 ${view === "timeline" ? "bg-surface shadow-card" : "text-ink-3"}`}>{t("plan.timeline")}</Link><Link href={`${base}/plan?view=calendar`} className={`rounded-lg px-3 py-1.5 ${view === "calendar" ? "bg-surface shadow-card" : "text-ink-3"}`}>{t("plan.calendar")}</Link></div></div>} />
       {view === "calendar" ? (
         <div className="grid grid-cols-3 gap-2.5">
           {Array.from({ length: total }, (_, i) => i + 1).map(d => { const it = itemsOnDay(b, d); const di = dayL(b.days.find(x => x.day === d), locale); return (
