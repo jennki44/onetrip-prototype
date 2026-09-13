@@ -6,7 +6,7 @@ import { budgetBase, catBudgetBase, committedBase, dayCount, dayLabel, fmtTime, 
 export interface Answer { html: string; actions?: { label: string; href: string }[]; note?: string }
 export const SUGGESTIONS = ["What are we doing tomorrow?", "How much have we spent?", "Who owes me?", "What haven't we booked?", "Which day is the busiest?", "Are we over budget?", "How much have we spent on food?", "What still needs a decision?"];
 const esc = (s: string) => s.replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] as string));
-const tbl = (rows: [string, string][]) => `<table class="w-full text-[13.5px] mt-2">${rows.map(([k, v]) => `<tr class="border-t border-line-2"><td class="py-1">${k}</td><td class="py-1 text-right font-bold num">${v}</td></tr>`).join("")}</table>`;
+const tbl = (rows: [string, string][]) => `<table class="w-full text-[0.8438rem] mt-2">${rows.map(([k, v]) => `<tr class="border-t border-line-2"><td class="py-1">${k}</td><td class="py-1 text-right font-bold num">${v}</td></tr>`).join("")}</table>`;
 const DAYNAMES: Record<string, number> = { sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6 };
 
 export function answer(b: TripBundle, q: string, ctx: { today: number; me: string; rc: string; locale: string; base: string }): Answer {

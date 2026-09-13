@@ -11,8 +11,8 @@ export default async function Travellers({ params }: { params: Promise<{ tripId:
   return (
     <div className="mx-auto max-w-[640px]">
       <PageHead title={t("more.travellers")} sub={t("ui.travellersSub")} right={me && ["owner", "admin"].includes(me.role) ? <Link href={`${base}/invite`} className="btn btn-sun btn-sm">{t("ui.inviteBtn")}</Link> : undefined} />
-      <div className="card divide-y divide-line-2 p-0">{b.members.map(m => <div key={m.user_id} className="flex items-center gap-3 px-4 py-3"><Avatar p={m.profile} size="lg" /><div className="flex-1"><div className="font-bold">{m.profile.name}{m.user_id === user?.id ? ` ${t("ui.you")}` : ""}</div><div className="text-[13px] text-ink-2">{t(`ui.roles.${m.role}`)} · {t("invite.joined")}</div></div><Pill tone={m.role === "owner" ? "teal" : undefined}>{t(`ui.roles.${m.role}`)}</Pill></div>)}</div>
-      <div className="card mt-4"><div className="eyebrow mb-2">{t("invite.code")}</div><div className="flex items-center justify-between"><kbd className="font-mono text-[20px] tracking-[.12em]">{b.trip.invite_code}</kbd><Link href={`${base}/invite`} className="btn btn-sm">{t("invite.share")}</Link></div></div>
+      <div className="card divide-y divide-line-2 p-0">{b.members.map(m => <div key={m.user_id} className="flex items-center gap-3 px-4 py-3"><Avatar p={m.profile} size="lg" /><div className="flex-1"><div className="font-bold">{m.profile.name}{m.user_id === user?.id ? ` ${t("ui.you")}` : ""}</div><div className="text-[0.8125rem] text-ink-2">{t(`ui.roles.${m.role}`)} · {t("invite.joined")}</div></div>{m.user_id === user?.id ? <Link href={`/account?next=${base}/travellers`} className="btn btn-sm">✏️ {t("account.edit")}</Link> : <Pill tone={m.role === "owner" ? "teal" : undefined}>{t(`ui.roles.${m.role}`)}</Pill>}</div>)}</div>
+      <div className="card mt-4"><div className="eyebrow mb-2">{t("invite.code")}</div><div className="flex items-center justify-between"><kbd className="font-mono text-[1.25rem] tracking-[.12em]">{b.trip.invite_code}</kbd><Link href={`${base}/invite`} className="btn btn-sm">{t("invite.share")}</Link></div></div>
     </div>
   );
 }

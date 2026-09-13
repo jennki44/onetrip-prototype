@@ -16,7 +16,7 @@ export async function proxy(request: NextRequest) {
   });
   const { data: { user } } = await sb.auth.getUser();
   const path = request.nextUrl.pathname;
-  const protectedPath = path.startsWith("/t/") || path.startsWith("/trips") || path.startsWith("/new");
+  const protectedPath = path.startsWith("/t/") || path.startsWith("/trips") || path.startsWith("/new") || path.startsWith("/account");
   if (protectedPath && !user) {
     const url = request.nextUrl.clone(); url.pathname = "/signin"; url.searchParams.set("next", path);
     return NextResponse.redirect(url);

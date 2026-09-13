@@ -15,7 +15,7 @@ export default async function MapPage({ params, searchParams }: { params: Promis
     <div>
       <PageHead title={t("nav.map")} sub={t("ui.map.mapSub")} />
       <TripMap tripId={tripId} places={b.places} todayIds={todayIds} bookedIds={bookedIds} focus={sp.focus || null} initialFilter={sp.filter || "all"} links={Object.fromEntries(b.places.map(p => [p.id, { items: b.items.filter(i => i.place_id === p.id).map(i => ({ id: i.id, title: itemTitle(i, locale), day: i.day })), decisions: b.decisions.filter(d => b.options.some(o => o.decision_id === d.id && o.place_id === p.id)).map(d => ({ id: d.id, title: (locale.startsWith("zh") && d.title_zh) || d.title })), expenses: b.expenses.filter(e => e.place_id === p.id).length }]))} />
-      <p className="mt-3 text-[12.5px] text-ink-3">{t("ui.mapNote")}</p>
+      <p className="mt-3 text-[0.7813rem] text-ink-3">{t("ui.mapNote")}</p>
       <Link href={`/t/${tripId}/plan/new`} className="sr-only">{t("plan.addActivity")}</Link>
     </div>
   );

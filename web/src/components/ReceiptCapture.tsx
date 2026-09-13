@@ -18,12 +18,12 @@ export function ReceiptCapture(props: Props) {
   return (
     <div className="flex flex-col gap-4">
       <label className="relative flex aspect-[3/4] max-h-[46vh] cursor-pointer items-center justify-center overflow-hidden rounded-[22px] bg-[#0e1416] text-white">
-        {preview ? <img src={preview} alt="" className="h-full w-full object-contain" /> : <div className="text-center"><div className="text-[44px]">📷</div><div className="mt-1 text-[14px] font-bold">{t("money.scan")}</div><div className="text-[12px] text-white/70">{t("receipt.frame")}</div></div>}
+        {preview ? <img src={preview} alt="" className="h-full w-full object-contain" /> : <div className="text-center"><div className="text-[2.75rem]">📷</div><div className="mt-1 text-[0.875rem] font-bold">{t("money.scan")}</div><div className="text-[0.75rem] text-white/70">{t("receipt.frame")}</div></div>}
         <input type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" capture="environment" className="hidden" onChange={e => onFile(e.target.files?.[0] || null)} />
-        {busy && <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-[14px] font-bold">{t("receipt.reading")}</div>}
+        {busy && <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-[0.875rem] font-bold">{t("receipt.reading")}</div>}
       </label>
-      {err && <p className="text-[13px] text-bad">{err}</p>}
-      <p className="text-[12.5px] text-ink-3">{t("receipt.assign")}</p>
+      {err && <p className="text-[0.8125rem] text-bad">{err}</p>}
+      <p className="text-[0.7813rem] text-ink-3">{t("receipt.assign")}</p>
       <ExpenseForm {...props} initialItems={[{ name: "", amount: "", userIds: props.members.map(m => m.id) }]} initial={{ receiptImagePath: path || undefined }} />
     </div>
   );

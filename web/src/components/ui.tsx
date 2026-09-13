@@ -20,14 +20,14 @@ export function Eyebrow({ children, action }: { children: React.ReactNode; actio
   return (
     <div className="eyebrow mb-2 flex items-center justify-between">
       <span>{children}</span>
-      {action && <Link href={action.href} className="normal-case tracking-normal text-[13px] font-extrabold text-teal-text">{action.label} ›</Link>}
+      {action && <Link href={action.href} className="normal-case tracking-normal text-[0.8125rem] font-extrabold text-teal-text">{action.label} ›</Link>}
     </div>
   );
 }
 export function PageHead({ title, sub, right }: { title: string; sub?: string; right?: React.ReactNode }) {
   return (
     <div className="mb-4 flex items-start justify-between gap-3">
-      <div><h1 className="text-[28px] leading-tight">{title}</h1>{sub && <p className="text-ink-2 text-[14.5px]">{sub}</p>}</div>
+      <div><h1 className="text-[1.75rem] leading-tight">{title}</h1>{sub && <p className="text-ink-2 text-[0.9063rem]">{sub}</p>}</div>
       {right}
     </div>
   );
@@ -42,5 +42,5 @@ export function Bar({ pct, tone, ghost }: { pct: number; tone?: "good" | "warn" 
   );
 }
 export function Empty({ emoji, title, sub, action }: { emoji: string; title: string; sub?: string; action?: React.ReactNode }) {
-  return <div className="py-10 text-center text-ink-2"><div className="mb-2 text-[40px]">{emoji}</div><h3 className="text-ink text-[16px]">{title}</h3>{sub && <p className="mt-1">{sub}</p>}{action && <div className="mt-3">{action}</div>}</div>;
+  return <div className="py-10 text-center text-ink-2"><div className="mb-2 text-[2.5rem]">{emoji}</div><h3 className="text-ink text-[1rem]">{title}</h3>{sub && <p className="mt-1">{sub}</p>}{action && <div className="mt-3">{action}</div>}</div>;
 }

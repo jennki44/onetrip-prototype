@@ -9,7 +9,7 @@ export default async function History({ params }: { params: Promise<{ tripId: st
   return (
     <div className="mx-auto max-w-[600px]">
       <PageHead title={t("more.history")} sub={t("ui.historySub")} />
-      <div className="card">{[...groups.entries()].map(([k, as]) => <div key={k}><div className="eyebrow pb-1 pt-2">{k}</div>{as.map(a => { const p = b.members.find(m => m.user_id === a.user_id)?.profile; return <div key={a.id} className="flex items-start gap-3 border-t border-line-2 py-2.5"><span className="num w-[62px] shrink-0 pt-0.5 text-[12.5px] text-ink-3">{new Date(a.created_at).toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit" })}</span>{p && <Avatar p={p} size="sm" />}<div><b>{p?.name || t("ui.someone")}</b> <span className="text-ink-2">{a.text}</span></div></div>; })}</div>)}{!b.activity.length && <p className="text-ink-2">{t("ui.nothingYet")}</p>}</div>
+      <div className="card">{[...groups.entries()].map(([k, as]) => <div key={k}><div className="eyebrow pb-1 pt-2">{k}</div>{as.map(a => { const p = b.members.find(m => m.user_id === a.user_id)?.profile; return <div key={a.id} className="flex items-start gap-3 border-t border-line-2 py-2.5"><span className="num w-[62px] shrink-0 pt-0.5 text-[0.7813rem] text-ink-3">{new Date(a.created_at).toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit" })}</span>{p && <Avatar p={p} size="sm" />}<div><b>{p?.name || t("ui.someone")}</b> <span className="text-ink-2">{a.text}</span></div></div>; })}</div>)}{!b.activity.length && <p className="text-ink-2">{t("ui.nothingYet")}</p>}</div>
     </div>
   );
 }

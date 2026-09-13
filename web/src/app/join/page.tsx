@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "@/components/Logo";
 import { getT } from "@/lib/i18n/server";
 import { supabaseServer, currentUser } from "@/lib/supabase/server";
 import { joinTrip } from "./actions";
@@ -11,15 +12,16 @@ export default async function Join({ searchParams }: { searchParams: Promise<{ c
   const user = await currentUser();
   return (
     <div className="mx-auto w-full max-w-[440px] px-6 pt-8">
-      <Link href="/" className="text-[14px] font-extrabold text-ink-2">‹ {t("common.back")}</Link>
-      <h1 className="mt-3 text-[28px]">{t("join.title")}</h1><p className="mb-4 text-ink-2">{t("join.sub")}</p>
-      <form method="get" className="flex gap-2"><input name="code" defaultValue={sp.code || ""} className="input font-mono text-center text-[22px] uppercase tracking-[.15em]" placeholder="SYDNEY-26" maxLength={12} /><button className="btn btn-teal">{t("join.preview")}</button></form>
-      {sp.error && <p className="mt-2 text-[13px] text-bad">{sp.error}</p>}
-      {code.length >= 6 && !preview && <p className="mt-4 text-[14px] text-ink-2">{t("ui.noMatch")}</p>}
+      <div className="mb-4"><Logo size={36} /></div>
+      <Link href="/" className="text-[0.875rem] font-extrabold text-ink-2">‹ {t("common.back")}</Link>
+      <h1 className="mt-3 text-[1.75rem]">{t("join.title")}</h1><p className="mb-4 text-ink-2">{t("join.sub")}</p>
+      <form method="get" className="flex gap-2"><input name="code" defaultValue={sp.code || ""} className="input font-mono text-center text-[1.375rem] uppercase tracking-[.15em]" placeholder="SYDNEY-26" maxLength={12} /><button className="btn btn-teal">{t("join.preview")}</button></form>
+      {sp.error && <p className="mt-2 text-[0.8125rem] text-bad">{sp.error}</p>}
+      {code.length >= 6 && !preview && <p className="mt-4 text-[0.875rem] text-ink-2">{t("ui.noMatch")}</p>}
       {preview && (
-        <div className="card mt-4"><div className="flex items-center gap-3"><span className="text-[36px]">{preview.emoji}</span><div><div className="text-[20px] font-bold">{preview.name}</div><div className="text-ink-2">{preview.destination} · {preview.members} {t("common.travellers")} · {preview.plans} {t("plan.plans", { n: "" }).trim()}</div></div></div>
+        <div className="card mt-4"><div className="flex items-center gap-3"><span className="text-[2.25rem]">{preview.emoji}</span><div><div className="text-[1.25rem] font-bold">{preview.name}</div><div className="text-ink-2">{preview.destination} · {preview.members} {t("common.travellers")} · {preview.plans} {t("plan.plans", { n: "" }).trim()}</div></div></div>
           <form action={joinTrip} className="mt-4 flex gap-2"><input type="hidden" name="code" value={code} /><Link href="/" className="btn flex-1">{t("join.notNow")}</Link><button className="btn btn-sun flex-1">{user ? t("welcome.join") : t("join.asGuest")}</button></form>
-          {!user && <p className="mt-2 text-[12px] text-ink-3">{t("ui.join.guestNote")}</p>}
+          {!user && <p className="mt-2 text-[0.75rem] text-ink-3">{t("ui.join.guestNote")}</p>}
         </div>)}
     </div>
   );

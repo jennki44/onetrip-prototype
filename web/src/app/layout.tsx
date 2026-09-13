@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Baloo_2, Nunito, Noto_Sans_TC, Fredoka, Quicksand, Outfit, Caveat, Rubik, Sora } from "next/font/google";
 import { cookies } from "next/headers";
 import Script from "next/script";
+import { Suspense } from "react";
+import { NavProgress } from "@/components/NavProgress";
 import "./globals.css";
 import { I18nProvider } from "@/lib/i18n/provider";
 import { isLocale, type Locale, DEFAULT_LOCALE, LOCALE_COOKIE } from "@/lib/i18n/config";
@@ -28,7 +30,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = { themeColor: "#1fae9f", width: "device-width", initialScale: 1, viewportFit: "cover" };
 
 // Applies the saved look and theme before first paint so there is no flash. Values are validated against fixed allowlists.
-const bootScript = `(function(){try{var r=document.documentElement;var l=localStorage.getItem('onetrip-look');if(l&&/^(postcard|gummy|journal|metro|classic)$/.test(l))r.dataset.look=l;var t=localStorage.getItem('onetrip-theme');if(t==='light'||t==='dark')r.dataset.theme=t;else if(matchMedia('(prefers-color-scheme: dark)').matches)r.classList.add('dark-auto');}catch(e){}})();`;
+const bootScript = `(function(){try{var r=document.documentElement;var l=localStorage.getItem('onetrip-look');if(l&&/^(postcard|gummy|journal|metro|classic)$/.test(l))r.dataset.look=l;var s=localStorage.getItem('onetrip-text');if(s==='large'||s==='xlarge')r.dataset.text=s;var t=localStorage.getItem('onetrip-theme');if(t==='light'||t==='dark')r.dataset.theme=t;else if(matchMedia('(prefers-color-scheme: dark)').matches)r.classList.add('dark-auto');}catch(e){}})();`;
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const jar = await cookies();
@@ -39,7 +41,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang={locale} className={`${fonts} h-full`} suppressHydrationWarning>
       <body className="min-h-full flex flex-col">
         <Script id="onetrip-boot" strategy="beforeInteractive">{bootScript}</Script>
-        <I18nProvider locale={locale}>{children}</I18nProvider>
+        <I18nProvider locale={locale}><Suspense fallback={null}><NavProgress /></Suspense>{children}</I18nProvider>
       </body>
     </html>
   );

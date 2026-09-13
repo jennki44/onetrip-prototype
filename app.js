@@ -213,7 +213,7 @@ SCREENS.welcome = () => h`
     <h1 class="h1">One trip.<br>Everyone together.</h1>
     <p class="sub" style="font-size:16px">Plan, decide, spend and travel together in one shared trip.</p>
     <div class="art">${welcomeArt()}</div>
-    <div class="fragments"><span>WhatsApp</span><span>Google Maps</span><span>Notes</span><span>Spreadsheet</span><span>Calendar</span><span>Email</span><span>Splitwise</span><span>Booking sites</span><span>Camera roll</span><span class="keep">One trip</span></div>
+    <div class="fragments"><span>WhatsApp</span><span>Google Maps</span><span>Notes</span><span>Spreadsheet</span><span>Calendar</span><span>Email</span><span>Splitwise</span><span>Booking sites</span><span>Camera roll</span><span class="keep">OneTRIP</span></div>
     <div class="stack">
       <button class="btn primary lg block" onclick="go('create',{step:1})">Create a trip</button>
       <button class="btn outline lg block" onclick="go('join')">Join a trip</button>
