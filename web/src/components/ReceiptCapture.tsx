@@ -24,7 +24,7 @@ export function ReceiptCapture(props: Props) {
       </label>
       {err && <p className="text-[0.8125rem] text-bad">{err}</p>}
       <p className="text-[0.7813rem] text-ink-3">{t("receipt.assign")}</p>
-      <ExpenseForm {...props} initialItems={[{ name: "", amount: "", userIds: props.members.map(m => m.id) }]} initial={{ receiptImagePath: path || undefined }} />
+      <ExpenseForm {...props} initialItems={props.members.length > 1 ? [{ name: "", amount: "", userIds: props.members.map(m => m.id) }] : undefined} initial={{ receiptImagePath: path || undefined }} />
     </div>
   );
 }

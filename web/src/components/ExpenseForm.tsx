@@ -27,13 +27,16 @@ export function ExpenseForm({ tripId, baseCurrency, members, meId, categories, d
     if (split === "amounts") return Object.fromEntries(participants.map(id => [id, toMinor(Number(vals[id]) || 0, currency)]));
     return splitItemised(items.map(it => ({ amountMinor: toMinor(Number(it.amount) || 0, currency), userIds: it.userIds })), 0);
   }, [split, totalMinor, participants, vals, items, currency]);
-  const sum = Object.values(shares).reduce((a, v) => a + v, 0); const ok = totalMinor > 0 && Math.abs(sum - totalMinor) <= Math.max(1, participants.length) && merchant.trim();
+  const sum = Object.values(shares).reduce((a, v) => a + v, 0); const tolerance = Math.max(1, participants.length); const diff = totalMinor - sum; const matches = Math.abs(diff) <= tolerance;
+  const ok = totalMinor > 0 && matches && merchant.trim();
+  const reason = !merchant.trim() ? t("ui.needMerchant") : totalMinor <= 0 ? t("ui.needAmount") : !matches ? (diff > 0 ? t("ui.mismatch", { items: fmtMoney(sum, currency), total: fmtMoney(totalMinor, currency), diff: fmtMoney(diff, currency) }) : t("ui.overBy", { items: fmtMoney(sum, currency), total: fmtMoney(totalMinor, currency), diff: fmtMoney(-diff, currency) })) : null;
+  const addRemainder = () => setItems(a => { const blank = a.findIndex(it => !(Number(it.amount) > 0)); const row = { name: a[blank]?.name || "", amount: (diff / (currency === "JPY" ? 1 : 100)).toFixed(currency === "JPY" ? 0 : 2), userIds: a[blank]?.userIds?.length ? a[blank].userIds : members.map(m => m.id) }; return blank >= 0 ? a.map((it, i) => (i === blank ? row : it)) : [...a, row]; });
   const toggle = (id: string) => setParticipants(p => (p.includes(id) ? p.filter(x => x !== id) : [...p, id]));
   const submit = () => start(async () => {
     setError(null);
     try {
       const input: ExpenseInput = { tripId, merchant, amount: Number(amount), currency, date, category, payerId: payer, participants: split === "itemised" ? Object.keys(shares) : participants, split, note, itemId: item?.id || null, placeId: item?.placeId || null, emoji: category === "Food" ? "🍽️" : category === "Transport" ? "🚗" : category === "Activities" ? "🎟️" : category === "Shopping" ? "🛍️" : category === "Accommodation" ? "🏨" : "💰",
-        splitValues: split === "equal" || split === "itemised" ? undefined : Object.fromEntries(participants.map(id => [id, Number(vals[id]) || 0])), items: split === "itemised" ? items.map(it => ({ name: it.name, amount: Number(it.amount) || 0, userIds: it.userIds })) : undefined, receiptImagePath: initial?.receiptImagePath || null };
+        splitValues: split === "equal" || split === "itemised" ? undefined : Object.fromEntries(participants.map(id => [id, Number(vals[id]) || 0])), items: split === "itemised" ? items.filter(it => Number(it.amount) > 0).map((it, k) => ({ name: it.name.trim() || `${merchant.trim() || t("receipt.items")} ${k + 1}`, amount: Number(it.amount) || 0, userIds: it.userIds.length ? it.userIds : participants })) : undefined, receiptImagePath: initial?.receiptImagePath || null };
       const id = await createExpense(input); router.push(`/t/${tripId}/money/${id}?saved=1`);
     } catch (e) { setError(e instanceof Error ? e.message : t("errors.generic")); }
   });
@@ -53,7 +56,9 @@ export function ExpenseForm({ tripId, baseCurrency, members, meId, categories, d
           {(split === "itemised" ? members.filter(m => shares[m.id]) : members.filter(m => participants.includes(m.id))).map(m => <div key={m.id} className="flex items-center gap-2.5 border-t border-line-2 py-2 first:border-t-0"><span className="avatar" style={{ background: m.color, width: 24, height: 24, fontSize: 9 }}>{m.initials}</span><span className="flex-1 font-semibold">{m.name}</span>
             {split === "amounts" && <input className="input num w-24 py-1.5 text-right" inputMode="decimal" value={vals[m.id] || ""} onChange={e => setVals(v => ({ ...v, [m.id]: e.target.value }))} />}{split === "percent" && <><input className="input num w-20 py-1.5 text-right" inputMode="decimal" value={vals[m.id] ?? (100 / participants.length).toFixed(0)} onChange={e => setVals(v => ({ ...v, [m.id]: e.target.value }))} /><span className="text-[0.75rem]">%</span></>}{split === "shares" && <div className="flex items-center rounded-lg bg-surface-2"><button type="button" className="px-2.5 py-1 font-bold" onClick={() => setVals(v => ({ ...v, [m.id]: String(Math.max(0, (Number(v[m.id]) || 1) - 1)) }))}>−</button><span className="px-1 font-bold">{vals[m.id] ?? 1}</span><button type="button" className="px-2.5 py-1 font-bold" onClick={() => setVals(v => ({ ...v, [m.id]: String((Number(v[m.id]) || 1) + 1) }))}>+</button></div>}
             <span className="num w-[84px] text-right font-display font-bold">{fmtMoney(shares[m.id] || 0, currency)}</span></div>)}
-          <div className="flex items-center justify-between border-t-2 border-line pt-2"><b>{t("money.total")}</b><b className={`num font-display ${Math.abs(sum - totalMinor) > Math.max(1, participants.length) ? "text-bad" : "text-good"}`}>{fmtMoney(sum, currency)}</b></div>
+          <div className="flex items-center justify-between border-t-2 border-line pt-2"><b>{t("money.total")}</b><b className={`num font-display ${!matches ? "text-bad" : "text-good"}`}>{fmtMoney(sum, currency)}</b></div>
+          {reason && <p className="mt-2 rounded-xl bg-warn-soft p-2.5 text-[0.85rem] font-bold text-ink" role="status">{reason}</p>}
+          {split === "itemised" && totalMinor > 0 && diff > tolerance && <button type="button" onClick={addRemainder} className="btn btn-teal btn-sm mt-2">{t("ui.addRemainder", { diff: fmtMoney(diff, currency) })}</button>}
         </div>
       </div>
       <Field label={t("money.notes")}><input className="input" value={note} onChange={e => setNote(e.target.value)} /></Field>
