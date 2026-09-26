@@ -19,7 +19,8 @@ export default async function SignIn({ searchParams }: { searchParams: Promise<{
   const mode: Mode = sp.mode === "password" || sp.mode === "signup" || sp.mode === "forgot" ? sp.mode : "magic";
   const next = safeNext(sp.next); const q = (m: Mode) => `/signin?mode=${m}&next=${encodeURIComponent(next)}`;
   const email = sp.email && sp.email.length < 200 ? sp.email : "";
-  const error = sp.error === "exists" ? t("auth.exists") : sp.error;
+  const error = sp.error === "exists" ? t("auth.exists") : sp.error === "link" ? t("auth.linkFail") : sp.error;
+  const joining = next.startsWith("/join");
   const emailField = <label className="text-[0.85rem] font-extrabold text-ink-2">{t("auth.email")}<input name="email" type="email" required autoComplete="email" inputMode="email" defaultValue={email} className="input mt-1" placeholder="you@example.com" /></label>;
   return (
     <div className="mx-auto w-full max-w-[440px] px-6 pb-10 pt-8">
@@ -31,6 +32,7 @@ export default async function SignIn({ searchParams }: { searchParams: Promise<{
           <Link href={q("password")} className={mode !== "magic" ? "on" : ""}>{t("auth.tabPassword")}</Link>
         </div>
       )}
+      {joining && <p className="mt-3 rounded-2xl bg-sun-soft p-3 font-bold text-ink">🧳 {t("auth.joinFirst")}</p>}
       <p className="mt-2 text-[0.9rem] text-ink-2">{mode === "signup" ? t("auth.createSub") : mode === "magic" ? t("auth.magicHint") : mode === "password" ? t("auth.passwordHint") : ""}</p>
 
       {mode === "magic" && (sp.sent === "1" ? <div className="mt-4 rounded-2xl bg-good-soft p-4">✉️ {t("auth.sent")}</div> : (

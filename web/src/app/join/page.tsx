@@ -1,15 +1,21 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { getT } from "@/lib/i18n/server";
 import { supabaseServer, currentUser } from "@/lib/supabase/server";
 import { joinTrip } from "./actions";
 
-export default async function Join({ searchParams }: { searchParams: Promise<{ code?: string; error?: string }> }) {
+export default async function Join({ searchParams }: { searchParams: Promise<{ code?: string; error?: string; auto?: string }> }) {
   const sp = await searchParams; const { t } = await getT(); const code = (sp.code || "").toUpperCase().replace(/-/g, "");
   type Preview = { id: string; name: string; destination: string; emoji: string; start_date: string; end_date: string; members: number; plans: number };
   let preview: Preview | null = null;
   if (code.length >= 6) { const sb = await supabaseServer(); const { data } = await sb.rpc("preview_trip", { p_code: code }); preview = ((data as Preview[] | null) || [])[0] || null; }
   const user = await currentUser();
+  // Came back from sign-in / sign-up with a valid code: join without another tap.
+  if (user && preview && sp.auto === "1") {
+    const sb = await supabaseServer(); const { data: tripId, error } = await sb.rpc("join_trip", { p_code: code });
+    if (!error && tripId) redirect(`/t/${tripId}`);
+  }
   return (
     <div className="mx-auto w-full max-w-[440px] px-6 pt-8">
       <div className="mb-4"><Logo size={36} /></div>
