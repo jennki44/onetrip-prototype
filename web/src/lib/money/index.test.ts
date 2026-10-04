@@ -34,5 +34,5 @@ describe("balances and settlement", () => {
 describe("currency", () => {
   it("handles zero-decimal currencies", () => { expect(toMinor(1500, "JPY")).toBe(1500); expect(toMinor(12.5, "AUD")).toBe(1250); expect(fmtMoney(1500, "JPY")).toBe("¥1,500"); });
   it("converts base to reporting currency", () => { expect(convertMinor(10000, "AUD", "HKD", 5.13)).toBe(51300); expect(convertMinor(10000, "AUD", "AUD", 1)).toBe(10000); });
-  it("formats sensibly", () => { expect(fmtMoney(11150, "AUD")).toBe("A$111.50"); expect(fmtMoney(344500, "AUD")).toBe("A$3,445"); expect(fmtMoney(1767000, "HKD")).toBe("HK$17,670"); });
+  it("formats sensibly", () => { expect(fmtMoney(11150, "AUD")).toBe("A$111.50"); expect(fmtMoney(344500, "AUD")).toBe("A$3,445.00"); expect(fmtMoney(1767000, "HKD")).toBe("HK$17,670.00"); expect(fmtMoney(2437, "AUD")).toBe("A$24.37"); });
 });

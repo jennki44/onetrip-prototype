@@ -75,7 +75,8 @@ export function fromMinor(minor: number, currency: string) { return minor / mino
 /** Format a minor-unit amount in its own currency. */
 export function fmtMoney(minor: number, currency: string, opts: { decimals?: number; locale?: string } = {}): string {
   const v = fromMinor(minor, currency); const abs = Math.abs(v);
-  const dec = opts.decimals ?? (ZERO_DECIMAL.has(currency) || currency === "HKD" || abs >= 1000 ? 0 : Number.isInteger(abs) ? 0 : 2);
+  // Always two decimals so shares and totals line up to the cent; currencies without minor units (JPY) show none.
+  const dec = ZERO_DECIMAL.has(currency) ? 0 : opts.decimals ?? 2;
   return (CURRENCY_SYMBOL[currency] || currency + " ") + abs.toLocaleString(opts.locale || "en-AU", { minimumFractionDigits: dec, maximumFractionDigits: dec });
 }
 

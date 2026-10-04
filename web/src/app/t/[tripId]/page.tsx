@@ -72,13 +72,13 @@ export default async function TripHome({ params }: { params: Promise<{ tripId: s
             <Eyebrow action={{ href: `${base}/money`, label: t("home.details") }}>{t("home.money")}</Eyebrow>
             <div className="card">
               <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-                <div><div className="text-[0.7813rem] text-ink-3">{t("home.budget")}</div><div className="num font-display text-[1.25rem] font-bold">{bud != null ? inCurrency(b, bud, rc, { decimals: 0 }) : "—"}</div></div>
-                <div><div className="text-[0.7813rem] text-ink-3">{t("home.spent")}</div><div className="num font-display text-[1.25rem] font-bold">{inCurrency(b, spent, rc, { decimals: 0 })}</div></div>
-                <div><div className="text-[0.7813rem] text-ink-3">{t("home.remaining")}</div><div className="num font-display text-[1.25rem] font-bold text-good">{bud != null ? inCurrency(b, bud - spent, rc, { decimals: 0 }) : "—"}</div></div>
-                <div><div className="text-[0.7813rem] text-ink-3">{t("home.forecast")}</div><div className={`num font-display text-[1.25rem] font-bold ${bud != null && fc > bud ? "text-warn" : ""}`}>{inCurrency(b, fc, rc, { decimals: 0 })}</div></div>
+                <div><div className="text-[0.7813rem] text-ink-3">{t("home.budget")}</div><div className="num font-display text-[1.25rem] font-bold">{bud != null ? inCurrency(b, bud, rc) : "—"}</div></div>
+                <div><div className="text-[0.7813rem] text-ink-3">{t("home.spent")}</div><div className="num font-display text-[1.25rem] font-bold">{inCurrency(b, spent, rc)}</div></div>
+                <div><div className="text-[0.7813rem] text-ink-3">{t("home.remaining")}</div><div className="num font-display text-[1.25rem] font-bold text-good">{bud != null ? inCurrency(b, bud - spent, rc) : "—"}</div></div>
+                <div><div className="text-[0.7813rem] text-ink-3">{t("home.forecast")}</div><div className={`num font-display text-[1.25rem] font-bold ${bud != null && fc > bud ? "text-warn" : ""}`}>{inCurrency(b, fc, rc)}</div></div>
               </div>
               {bud != null && <div className="mt-3"><Bar pct={spent / bud * 100} ghost={(fc - spent) / bud * 100} /></div>}
-              {bud != null && (fc > bud ? <div className="mt-3 flex gap-2 rounded-xl bg-warn-soft p-3 text-[0.875rem]">⚠️<span>{t("home.over", { amount: inCurrency(b, fc - bud, rc, { decimals: 0 }) })}</span></div> : <div className="mt-3 flex gap-2 rounded-xl bg-good-soft p-3 text-[0.875rem]">✅<span>{t("home.under")}</span></div>)}
+              {bud != null && (fc > bud ? <div className="mt-3 flex gap-2 rounded-xl bg-warn-soft p-3 text-[0.875rem]">⚠️<span>{t("home.over", { amount: inCurrency(b, fc - bud, rc) })}</span></div> : <div className="mt-3 flex gap-2 rounded-xl bg-good-soft p-3 text-[0.875rem]">✅<span>{t("home.under")}</span></div>)}
             </div>
           </section>
           <section className="mt-5">
