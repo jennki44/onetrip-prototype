@@ -21,7 +21,7 @@ export default async function EditExpense({ params }: { params: Promise<{ tripId
   return (
     <div className="mx-auto max-w-[560px]">
       <Link href={`${base}/money/${e.id}`} className="btn btn-sm mb-3">‹ {t("common.back")}</Link>
-      <h1 className="mb-1 text-[1.75rem]">{t("money.editExpense")}</h1><p className="mb-4 text-ink-2">{e.merchant}</p>
+      <h1 className="mb-1 text-[1.75rem]">{t("ui.editExpense")}</h1><p className="mb-4 text-ink-2">{e.merchant}</p>
       <ExpenseForm tripId={tripId} expenseId={e.id} baseCurrency={b.trip.base_currency} members={b.members.map(m => ({ id: m.user_id, name: m.profile.name, initials: m.profile.initials, color: m.profile.color }))} meId={user?.id || b.members[0].user_id} categories={Object.keys(b.trip.budget_categories || { Other: 0 })} defaultDate={e.date} places={b.places.map(p => ({ id: p.id, name: p.name }))} item={null}
         initial={{ merchant: e.merchant, amount: minorToText(e.amount_minor, e.currency), currency: e.currency, date: e.date, category: e.category, note: e.note || "", payerId: e.payer_id, participants: shares.map(s => s.user_id), split: initialSplit, vals: initialVals }} initialItems={initialItems} />
     </div>
