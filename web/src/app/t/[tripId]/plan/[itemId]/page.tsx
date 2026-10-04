@@ -9,7 +9,7 @@ import { ConfirmButton } from "@/components/ConfirmButton";
 import { navUrl } from "@/lib/nav";
 import { fmtMoney } from "@/lib/money";
 import { setExpenseItem } from "../../money/actions";
-import { deleteActivity, removeItemPhoto, setItemCover } from "../actions";
+import { deleteActivity, removeItemPhoto, setItemBooking, setItemCover } from "../actions";
 import { ItemPhotoAdd } from "@/components/ItemPhotoAdd";
 
 export default async function ItemDetail({ params, searchParams }: { params: Promise<{ tripId: string; itemId: string }>; searchParams: Promise<{ error?: string }> }) {
@@ -62,6 +62,7 @@ export default async function ItemDetail({ params, searchParams }: { params: Pro
             <div className="divide-y divide-line-2">
               {bk ? <Link href={`${base}/bookings/${bk.id}`} className="flex items-center gap-3 py-3"><span className="text-[1.1875rem]">🎟</span><div className="flex-1"><b>{bk.title}</b><div className="text-[0.7813rem] text-ink-3">{bk.reference ? `Ref ${bk.reference} · ` : ""}{bk.status}</div></div><span className="text-ink-3">›</span></Link>
                 : i.booking === "needed" ? <div className="flex items-center gap-3 py-3"><span className="text-[1.1875rem]">🎟</span><div className="flex-1"><b className="text-bad">{t("item.bookingMissing")}</b><div className="text-[0.7813rem] text-ink-3">{t("item.dropConfirmation")}</div></div><Link href={`${base}/inbox?for=${i.id}`} className="btn btn-sun btn-sm">{t("item.resolve")}</Link></div> : null}
+              {!bk && i.booking === "needed" && canEdit && <form action={setItemBooking} className="pb-3"><input type="hidden" name="tripId" value={tripId} /><input type="hidden" name="itemId" value={i.id} /><input type="hidden" name="booking" value="none" /><button className="btn btn-sm w-full">✓ {t("item.noBookingNeeded")}</button></form>}
               {dec && <Link href={`${base}/decisions/${dec.id}`} className="flex items-center gap-3 py-3"><span className="text-[1.1875rem]">🗳</span><div className="flex-1"><b>{decTitle(dec, locale)}</b><div className="text-[0.7813rem] text-ink-3">{t(`decisions.${dec.status === "confirmed" ? "confirmed" : "needsVotes"}`)}</div></div><span className="text-ink-3">›</span></Link>}
               {docs.map(d => <Link key={d.id} href={`${base}/documents`} className="flex items-center gap-3 py-3"><span className="text-[1.1875rem]">📄</span><div className="flex-1"><b>{d.name}</b><div className="text-[0.7813rem] text-ink-3">{d.category}</div></div><span className="text-ink-3">›</span></Link>)}
               {!bk && i.booking !== "needed" && !dec && !docs.length && <p className="py-2 text-[0.7813rem] text-ink-3">{t("item.nothingLinked")}</p>}

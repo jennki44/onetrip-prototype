@@ -13,8 +13,8 @@ const PLACE_EMOJI: Record<string, string> = { restaurant: "🍽️", activity: "
 const time = z.string().regex(/^\d{2}:\d{2}$/);
 
 export async function saveActivity(form: FormData) {
-  const p = z.object({ tripId: z.string().uuid(), itemId: z.string().uuid().optional(), title: z.string().trim().min(1).max(120), day: z.coerce.number().int().min(1).max(60), start: time, end: z.union([time, z.literal("")]).optional(), placeId: z.union([z.string().uuid(), z.literal(""), z.literal("__new")]), newPlaceName: z.string().trim().max(80).optional(), newPlaceType: z.enum(["restaurant", "activity", "hotel", "shopping", "transport", "saved"]).optional(), newPlaceAddress: z.string().trim().max(160).optional(), address: z.string().trim().max(160).optional(), people: z.array(z.string().uuid()), cost: z.string().optional(), status: z.enum(["idea", "proposed", "voting", "confirmed", "cancelled", "completed"]), note: z.string().max(500).optional() })
-    .parse({ tripId: form.get("tripId"), itemId: form.get("itemId") || undefined, title: form.get("title"), day: form.get("day"), start: form.get("start"), end: form.get("end") || "", placeId: form.get("placeId") || "", newPlaceName: form.get("newPlaceName") ?? undefined, newPlaceType: form.get("newPlaceType") ?? undefined, newPlaceAddress: form.get("newPlaceAddress") ?? undefined, address: form.get("address") ?? undefined, people: form.getAll("people"), cost: form.get("cost") || "", status: form.get("status"), note: form.get("note") || "" });
+  const p = z.object({ tripId: z.string().uuid(), itemId: z.string().uuid().optional(), title: z.string().trim().min(1).max(120), day: z.coerce.number().int().min(1).max(60), start: time, end: z.union([time, z.literal("")]).optional(), placeId: z.union([z.string().uuid(), z.literal(""), z.literal("__new")]), newPlaceName: z.string().trim().max(80).optional(), newPlaceType: z.enum(["restaurant", "activity", "hotel", "shopping", "transport", "saved"]).optional(), newPlaceAddress: z.string().trim().max(160).optional(), address: z.string().trim().max(160).optional(), booking: z.enum(["none", "needed"]).optional(), people: z.array(z.string().uuid()), cost: z.string().optional(), status: z.enum(["idea", "proposed", "voting", "confirmed", "cancelled", "completed"]), note: z.string().max(500).optional() })
+    .parse({ tripId: form.get("tripId"), itemId: form.get("itemId") || undefined, title: form.get("title"), day: form.get("day"), start: form.get("start"), end: form.get("end") || "", placeId: form.get("placeId") || "", newPlaceName: form.get("newPlaceName") ?? undefined, newPlaceType: form.get("newPlaceType") ?? undefined, newPlaceAddress: form.get("newPlaceAddress") ?? undefined, address: form.get("address") ?? undefined, booking: form.get("booking") ?? undefined, people: form.getAll("people"), cost: form.get("cost") || "", status: form.get("status"), note: form.get("note") || "" });
   const sb = await supabaseServer(); const { data: { user } } = await sb.auth.getUser(); if (!user) redirect("/signin");
   const b = await loadTrip(p.tripId); if (!b) redirect("/trips");
   let pl = p.placeId && p.placeId !== "__new" ? place(b, p.placeId) : null;
@@ -37,8 +37,8 @@ export async function saveActivity(form: FormData) {
   const cost = p.cost ? toMinor(Number(String(p.cost).replace(/[^\d.]/g, "")) || 0, b.trip.base_currency) : null;
   const row = { title: p.title, day: p.day, start_time: p.start, end_time: p.end || null, place_id: pl?.id || null, emoji: pl?.emoji || "📍", category: pl ? (pl.type === "restaurant" ? "food" : pl.type === "hotel" ? "stay" : pl.type) : "activity", status: p.status, participant_ids: p.people, cost_minor: cost, address: itemAddress, note: p.note || null, photo_url: (p.itemId && b.items.find(x => x.id === p.itemId)?.photo_url?.startsWith("doc:") ? b.items.find(x => x.id === p.itemId)!.photo_url : pl?.photo_url) || null, travel_min: pl?.from_hotel_min ? Math.max(5, Math.round(pl.from_hotel_min * 0.7)) : null };
   let id = p.itemId;
-  if (id) { const old = b.items.find(i => i.id === id); await sb.from("itinerary_items").update({ ...row, updated_at: new Date().toISOString() }).eq("id", id); await sb.from("activity_log").insert({ trip_id: p.tripId, user_id: user.id, text: old && old.start_time.slice(0, 5) !== p.start ? `Changed ${p.title} from ${fmtTime(old.start_time.slice(0, 5))} to ${fmtTime(p.start)}.` : `Edited ${p.title}.` }); }
-  else { const { data } = await sb.from("itinerary_items").insert({ ...row, trip_id: p.tripId, booking: "none", created_by: user.id }).select("id").single(); id = data?.id; await sb.from("activity_log").insert({ trip_id: p.tripId, user_id: user.id, text: `Added ${p.title} to ${dayLabel(b.trip, p.day)}.` }); await sb.from("notifications").insert({ trip_id: p.tripId, icon: "📍", text: `${b.members.find(m => m.user_id === user.id)?.profile.name || "Someone"} added ${p.title} to ${dayLabel(b.trip, p.day)}.`, link: { screen: "item", id } }); }
+  if (id) { const old = b.items.find(i => i.id === id); await sb.from("itinerary_items").update({ ...row, ...(p.booking && old?.booking !== "booked" ? { booking: p.booking } : {}), updated_at: new Date().toISOString() }).eq("id", id); await sb.from("activity_log").insert({ trip_id: p.tripId, user_id: user.id, text: old && old.start_time.slice(0, 5) !== p.start ? `Changed ${p.title} from ${fmtTime(old.start_time.slice(0, 5))} to ${fmtTime(p.start)}.` : `Edited ${p.title}.` }); }
+  else { const { data } = await sb.from("itinerary_items").insert({ ...row, trip_id: p.tripId, booking: p.booking || "none", created_by: user.id }).select("id").single(); id = data?.id; await sb.from("activity_log").insert({ trip_id: p.tripId, user_id: user.id, text: `Added ${p.title} to ${dayLabel(b.trip, p.day)}.` }); await sb.from("notifications").insert({ trip_id: p.tripId, icon: "📍", text: `${b.members.find(m => m.user_id === user.id)?.profile.name || "Someone"} added ${p.title} to ${dayLabel(b.trip, p.day)}.`, link: { screen: "item", id } }); }
   revalidatePath(`/t/${p.tripId}`, "layout"); redirect(`/t/${p.tripId}/plan/${id}`);
 }
 
@@ -86,4 +86,18 @@ export async function deleteActivity(form: FormData) {
   if (error || !data?.length) redirect(`/t/${tripId}/plan/${itemId}?error=${encodeURIComponent(error?.message || "denied")}`);
   await sb.from("activity_log").insert({ trip_id: tripId, user_id: user.id, text: `Removed ${it.title} from ${dayLabel(b.trip, it.day)}.` });
   revalidatePath(`/t/${tripId}`, "layout"); redirect(`/t/${tripId}/plan?day=${it.day}&removed=1`);
+}
+
+/** Say whether an activity still needs a booking. "none" clears the "booking missing" reminder; "needed" puts it back. */
+export async function setItemBooking(form: FormData) {
+  const p = z.object({ tripId: z.string().uuid(), itemId: z.string().uuid(), booking: z.enum(["none", "needed"]) }).safeParse({ tripId: form.get("tripId"), itemId: form.get("itemId"), booking: form.get("booking") });
+  if (!p.success) redirect("/trips");
+  const { tripId, itemId, booking } = p.data;
+  const sb = await supabaseServer(); const { data: { user } } = await sb.auth.getUser(); if (!user) redirect("/signin");
+  const { data: it } = await sb.from("itinerary_items").select("id, title, booking").eq("id", itemId).eq("trip_id", tripId).maybeSingle();
+  if (it && (it as { booking: string }).booking !== "booked") {
+    await sb.from("itinerary_items").update({ booking }).eq("id", itemId).eq("trip_id", tripId);
+    await sb.from("activity_log").insert({ trip_id: tripId, user_id: user.id, text: booking === "none" ? `Marked ${(it as { title: string }).title} as not needing a booking.` : `Marked ${(it as { title: string }).title} as needing a booking.` });
+  }
+  revalidatePath(`/t/${tripId}`, "layout"); redirect(`/t/${tripId}/plan/${itemId}`);
 }
