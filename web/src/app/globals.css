@@ -118,7 +118,7 @@ body {
 :lang(zh-Hant) body { font-family: var(--font-noto-tc), var(--font-nunito), system-ui, sans-serif; line-height: 1.6; }
 h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; letter-spacing: -0.01em; margin: 0; text-wrap: balance; }
 :lang(zh-Hant) h1, :lang(zh-Hant) h2, :lang(zh-Hant) h3 { font-family: var(--font-noto-tc), var(--font-baloo), system-ui, sans-serif; font-weight: 700; }
-button { font: inherit; color: inherit; cursor: pointer; background: none; border: 0; padding: 0; }
+@layer base { button { font: inherit; color: inherit; cursor: pointer; background: none; border: 0; padding: 0; } }
 a, button, [role="button"], label { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 /* Press feedback: every tappable thing visibly reacts within a frame of the touch. */
 a, button { transition: transform 0.12s ease, opacity 0.12s ease, filter 0.12s ease; }
@@ -147,7 +147,12 @@ button:disabled { opacity: 0.5; cursor: default; transform: none; }
 .tsize { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; padding: 0.7rem 0.4rem; border-radius: var(--r-sm); border: 2px solid var(--line); background: var(--surface); font-weight: 800; color: var(--ink-2); }
 .tsize b { font-family: var(--font-display); line-height: 1; }
 .tsize.on { border-color: var(--teal); background: var(--teal-soft); color: var(--teal-text); }
-input, select, textarea { font: inherit; color: inherit; }
+@layer base { input, select, textarea { font: inherit; color: inherit; } }
+/* Form fields never push their grid cell wider than the screen (iOS date inputs have a wide intrinsic size). */
+.input { min-width: 0; max-width: 100%; }
+input[type="date"].input, input[type="time"].input { -webkit-appearance: none; appearance: none; display: block; text-align: left; }
+input[type="date"].input::-webkit-date-and-time-value, input[type="time"].input::-webkit-date-and-time-value { text-align: left; }
+select.input { text-overflow: ellipsis; }
 :focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
 .num { font-variant-numeric: tabular-nums; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
@@ -238,3 +243,5 @@ input, select, textarea { font: inherit; color: inherit; }
 .pin-label { position: absolute; left: 50%; top: 44px; transform: rotate(45deg) translateX(-50%); transform-origin: 0 0; white-space: nowrap; font-size: 11px; font-weight: 800; color: #17302f; background: rgba(255, 255, 255, 0.92); padding: 1px 6px; border-radius: 6px; pointer-events: none; }
 .me-dot { width: 18px; height: 18px; border-radius: 50%; background: #2b8fd6; border: 3px solid #fff; box-shadow: 0 0 0 6px rgba(43, 143, 214, 0.25); }
 .map-btn { position: absolute; z-index: 1; display: inline-flex; align-items: center; justify-content: center; min-height: 2.6rem; padding: 0.4rem 0.8rem; border-radius: 999px; background: var(--surface); color: var(--ink); font-weight: 800; font-size: 0.85rem; box-shadow: var(--shadow-lg); }
+/* Look tiles: three per row on phones so all six fit */
+@media (max-width: 520px) { .looks { grid-template-columns: repeat(3, 1fr) !important; } }

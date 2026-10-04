@@ -1,3 +1,4 @@
+import { catLabel } from "@/lib/categories";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { loadTrip } from "@/lib/trip/load";
@@ -44,7 +45,7 @@ export default async function DecisionDetail({ params }: { params: Promise<{ tri
               <ul className="mt-1 list-disc pl-5 text-[0.875rem] text-ink-2">
                 <li>{t("ui.likeIt", { n: b.votes.filter(v => v.option_id === lead.id && (v.reaction === "love" || v.reaction === "good")).length, total: b.members.length, love: b.votes.filter(v => v.option_id === lead.id && v.reaction === "love").length, good: b.votes.filter(v => v.option_id === lead.id && v.reaction === "good").length })}</li>
                 {place(b, lead.place_id)?.rating ? <li>{t("ui.rated", { r: place(b, lead.place_id)!.rating!, min: place(b, lead.place_id)!.from_hotel_min || 0 })}</li> : null}
-                <li>{spentCat + lead.est_pp_minor * b.members.length <= budCat ? t("ui.withinBudget", { cat: t(`money.categories.${d.category}`), left: inCurrency(b, budCat - spentCat, rc) }) : t("ui.overBudget", { cat: t(`money.categories.${d.category}`), over: inCurrency(b, spentCat + lead.est_pp_minor * b.members.length - budCat, rc) })}</li>
+                <li>{spentCat + lead.est_pp_minor * b.members.length <= budCat ? t("ui.withinBudget", { cat: catLabel(t, d.category), left: inCurrency(b, budCat - spentCat, rc) }) : t("ui.overBudget", { cat: catLabel(t, d.category), over: inCurrency(b, spentCat + lead.est_pp_minor * b.members.length - budCat, rc) })}</li>
               </ul>
               {second && <p className="mt-2 text-[0.7813rem] text-ink-2">{t("ui.costsMore", { amount: inCurrency(b, Math.abs(lead.est_pp_minor - second.est_pp_minor), rc), dir: t(lead.est_pp_minor >= second.est_pp_minor ? "ui.more" : "ui.less"), name: name(second) })}</p>}
               <p className="mt-2 text-[0.75rem] text-ink-3">{t("ui.assumes", { n: b.members.length })}</p>
