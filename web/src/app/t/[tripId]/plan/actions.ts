@@ -71,3 +71,19 @@ export async function setItemCover(form: FormData) {
   if (d) await sb.from("itinerary_items").update({ photo_url: `doc:${p.docId}` }).eq("id", p.itemId).eq("trip_id", p.tripId);
   revalidatePath(`/t/${p.tripId}`, "layout"); redirect(`/t/${p.tripId}/plan/${p.itemId}`);
 }
+
+/** Remove an activity from the plan. Its photos and notes go with it; expenses are kept and simply lose the link. */
+export async function deleteActivity(form: FormData) {
+  const p = z.object({ tripId: z.string().uuid(), itemId: z.string().uuid() }).safeParse({ tripId: form.get("tripId"), itemId: form.get("itemId") });
+  if (!p.success) redirect("/trips");
+  const { tripId, itemId } = p.data;
+  const sb = await supabaseServer(); const { data: { user } } = await sb.auth.getUser(); if (!user) redirect("/signin");
+  const b = await loadTrip(tripId); if (!b) redirect("/trips");
+  const it = b.items.find(x => x.id === itemId); if (!it) redirect(`/t/${tripId}/plan`);
+  await sb.from("expenses").update({ item_id: null }).eq("trip_id", tripId).eq("item_id", itemId);
+  await sb.from("documents").delete().eq("trip_id", tripId).eq("linked_type", "item").eq("linked_id", itemId);
+  const { error, data } = await sb.from("itinerary_items").delete().eq("id", itemId).eq("trip_id", tripId).select("id");
+  if (error || !data?.length) redirect(`/t/${tripId}/plan/${itemId}?error=${encodeURIComponent(error?.message || "denied")}`);
+  await sb.from("activity_log").insert({ trip_id: tripId, user_id: user.id, text: `Removed ${it.title} from ${dayLabel(b.trip, it.day)}.` });
+  revalidatePath(`/t/${tripId}`, "layout"); redirect(`/t/${tripId}/plan?day=${it.day}&removed=1`);
+}

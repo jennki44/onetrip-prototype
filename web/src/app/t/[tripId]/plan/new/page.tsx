@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { loadTrip } from "@/lib/trip/load";
 import { getT } from "@/lib/i18n/server";
 import { dayCount, dayLabel } from "@/lib/trip/derive";
-import { saveActivity } from "../actions";
+import { deleteActivity, saveActivity } from "../actions";
+import { ConfirmButton } from "@/components/ConfirmButton";
 import { PlacePicker } from "@/components/PlacePicker";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) { return <label className="flex flex-col gap-1.5 text-[0.7813rem] font-extrabold text-ink-2">{label}{children}</label>; }
@@ -24,6 +25,7 @@ export default async function NewActivity({ params, searchParams }: { params: Pr
         <Field label={t("money.notes")}><textarea name="note" maxLength={500} defaultValue={i.note || ""} className="input min-h-20" placeholder={t("ui.noteHint")} /></Field>
         <button className="btn btn-sun w-full py-4 text-[1rem]">{edit ? t("common.save") : t("ui.addToTrip")}</button>
       </form>
+      {edit && <form action={deleteActivity} className="mt-6 text-center"><input type="hidden" name="tripId" value={tripId} /><input type="hidden" name="itemId" value={edit.id} /><ConfirmButton message={t("item.deleteConfirm", { name: edit.title })} className="btn btn-sm text-bad">🗑️ {t("item.deleteActivity")}</ConfirmButton></form>}
     </div>
   );
 }

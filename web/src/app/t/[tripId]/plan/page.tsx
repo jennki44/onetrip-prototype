@@ -7,7 +7,7 @@ import { currentUser } from "@/lib/supabase/server";
 import { dayCount, dayDate, dayL, dayLabel, fmtTime, inCurrency, itemNote, itemTitle, itemsOnDay, minutes, nowSlots, photoOf, place, placeName } from "@/lib/trip/derive";
 import { Avatars, PageHead, Pill } from "@/components/ui";
 
-export default async function Plan({ params, searchParams }: { params: Promise<{ tripId: string }>; searchParams: Promise<{ day?: string; view?: string }> }) {
+export default async function Plan({ params, searchParams }: { params: Promise<{ tripId: string }>; searchParams: Promise<{ day?: string; view?: string; removed?: string }> }) {
   const { tripId } = await params; const sp = await searchParams;
   const [b, { t, locale }, user] = await Promise.all([loadTrip(tripId), getT(), currentUser()]);
   if (!b) notFound();
@@ -23,6 +23,7 @@ export default async function Plan({ params, searchParams }: { params: Promise<{
   return (
     <div>
       <PageHead title={t("plan.title")} sub={t("plan.sub")} right={<div className="flex flex-col items-end gap-2">{canManage && <Link href={`${base}/settings/trip`} className="btn btn-sm">✏️ {t("tripEdit.edit")}</Link>}<div className="flex rounded-xl bg-surface-2 p-1 text-[0.8438rem] font-extrabold"><Link href={`${base}/plan?day=${day}`} className={`rounded-lg px-3 py-1.5 ${view === "timeline" ? "bg-surface shadow-card" : "text-ink-3"}`}>{t("plan.timeline")}</Link><Link href={`${base}/plan?view=calendar`} className={`rounded-lg px-3 py-1.5 ${view === "calendar" ? "bg-surface shadow-card" : "text-ink-3"}`}>{t("plan.calendar")}</Link></div></div>} />
+      {sp.removed && <p className="mb-3 rounded-2xl bg-good-soft p-3 font-bold">✅ {t("item.deleted")}</p>}
       {view === "calendar" ? (
         <div className="grid grid-cols-3 gap-2.5">
           {Array.from({ length: total }, (_, i) => i + 1).map(d => { const it = itemsOnDay(b, d); const di = dayL(b.days.find(x => x.day === d), locale); return (

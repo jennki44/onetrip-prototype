@@ -9,11 +9,11 @@ import { ConfirmButton } from "@/components/ConfirmButton";
 import { navUrl } from "@/lib/nav";
 import { fmtMoney } from "@/lib/money";
 import { setExpenseItem } from "../../money/actions";
-import { removeItemPhoto, setItemCover } from "../actions";
+import { deleteActivity, removeItemPhoto, setItemCover } from "../actions";
 import { ItemPhotoAdd } from "@/components/ItemPhotoAdd";
 
-export default async function ItemDetail({ params }: { params: Promise<{ tripId: string; itemId: string }> }) {
-  const { tripId, itemId } = await params;
+export default async function ItemDetail({ params, searchParams }: { params: Promise<{ tripId: string; itemId: string }>; searchParams: Promise<{ error?: string }> }) {
+  const [{ tripId, itemId }, sp] = await Promise.all([params, searchParams]);
   const [b, { t, locale }, user] = await Promise.all([loadTrip(tripId), getT(), currentUser()]);
   if (!b) notFound(); const i = b.items.find(x => x.id === itemId); if (!i) notFound();
   const base = `/t/${tripId}`; const rc = b.members.find(m => m.user_id === user?.id)?.profile.reporting_currency || b.trip.home_currency;
@@ -77,6 +77,8 @@ export default async function ItemDetail({ params }: { params: Promise<{ tripId:
           </div>
         </div>
       </div>
+      {sp.error && <p className="mt-4 rounded-2xl bg-bad-soft p-3 font-bold text-bad" role="alert">{sp.error === "denied" ? t("item.deleteDenied") : sp.error}</p>}
+      {canEdit && <form action={deleteActivity} className="mt-8 text-center"><input type="hidden" name="tripId" value={tripId} /><input type="hidden" name="itemId" value={i.id} /><ConfirmButton message={t("item.deleteConfirm", { name: itemTitle(i, locale) }) + (exps.length || album.length ? "\n\n" + t("item.deleteKeeps", { e: exps.length, p: album.length }) : "")} className="btn btn-sm text-bad">🗑️ {t("item.deleteActivity")}</ConfirmButton></form>}
     </div>
   );
 }
