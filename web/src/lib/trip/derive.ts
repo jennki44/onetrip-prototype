@@ -8,7 +8,10 @@ export interface TripBundle {
   trip: Trip; days: TripDay[]; members: (TripMember & { profile: Profile })[]; places: Place[]; items: ItineraryItem[]; bookings: Booking[];
   decisions: Decision[]; options: DecisionOption[]; votes: Vote[]; expenses: Expense[]; shares: ExpenseShare[]; settlements: Settlement[];
   notifications: Notification[]; activity: ActivityLog[]; notes: Note[]; documents: Document[];
+  /** Photos added to activities, oldest first, with short-lived signed links (private storage). */
+  itemPhotos?: Record<string, ItemPhoto[]>;
 }
+export type ItemPhoto = { id: string; url: string; name: string; added_by: string | null; created_at: string };
 
 /* Fixed demo rates: units of `to` per 1 unit of `from`. Replace with a provider later; never invented by Trip Brain. */
 let RATES_PER_AUD: Record<string, number> = { ...FALLBACK_PER_AUD }; let RATES_META: { updated: string | null; live: boolean } = { updated: null, live: false };
@@ -65,7 +68,13 @@ export function dayL(d: TripDay | undefined, locale?: string) { if (!d) return u
 
 export const place = (b: TripBundle, id: string | null) => (id ? b.places.find(p => p.id === id) || null : null);
 export const member = (b: TripBundle, id: string | null) => (id ? b.members.find(m => m.user_id === id) || null : null);
-export const photoOf = (b: TripBundle, i: ItineraryItem) => i.photo_url || place(b, i.place_id)?.photo_url || null;
+/** The picture that represents an activity: the cover chosen from its album ("doc:<id>"), else a fixed photo, else the first album photo, else the place's photo. */
+export const photoOf = (b: TripBundle, i: ItineraryItem) => {
+  const album = b.itemPhotos?.[i.id] || [];
+  if (i.photo_url?.startsWith("doc:")) { const c = album.find(x => x.id === i.photo_url!.slice(4)); if (c) return c.url; }
+  else if (i.photo_url) return i.photo_url;
+  return album[0]?.url || place(b, i.place_id)?.photo_url || null;
+};
 
 /* ---- money ---- */
 export const spentBase = (b: TripBundle) => b.expenses.reduce((a, e) => a + e.base_minor, 0);

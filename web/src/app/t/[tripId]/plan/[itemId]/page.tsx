@@ -9,6 +9,8 @@ import { ConfirmButton } from "@/components/ConfirmButton";
 import { navUrl } from "@/lib/nav";
 import { fmtMoney } from "@/lib/money";
 import { setExpenseItem } from "../../money/actions";
+import { removeItemPhoto, setItemCover } from "../actions";
+import { ItemPhotoAdd } from "@/components/ItemPhotoAdd";
 
 export default async function ItemDetail({ params }: { params: Promise<{ tripId: string; itemId: string }> }) {
   const { tripId, itemId } = await params;
@@ -20,6 +22,7 @@ export default async function ItemDetail({ params }: { params: Promise<{ tripId:
   const unlinked = b.expenses.filter(e => e.item_id !== i.id).sort((x, y) => Number(!!x.item_id) - Number(!!y.item_id) || y.date.localeCompare(x.date));
   const titleOf = (id: string | null) => { const o = b.items.find(x => x.id === id); return o ? itemTitle(o, locale) : ""; };
   const where = pl?.address || i.address || null; const nav = navUrl({ lat: pl?.lat, lng: pl?.lng, address: where, name: pl ? pl.name : null, near: b.trip.destination });
+  const album = b.itemPhotos?.[i.id] || []; const coverId = i.photo_url?.startsWith("doc:") ? i.photo_url.slice(4) : null;
   const canEdit = ["owner", "admin", "traveller"].includes(b.members.find(m => m.user_id === user?.id)?.role || "");
   const docs = b.documents.filter(d => (d.linked_type === "booking" && d.linked_id === i.booking_id) || (d.linked_type === "item" && d.linked_id === i.id));
   const ph = photoOf(b, i);
@@ -36,6 +39,18 @@ export default async function ItemDetail({ params }: { params: Promise<{ tripId:
             {where ? <div className="mt-1 text-[0.9rem] text-ink-2">📍 {where}</div> : !pl ? <p className="text-[0.9rem] text-ink-2">{t("item.addWhere")}</p> : null}
             {pl && <div className="text-[0.7813rem] text-ink-3">{pl.area}{pl.rating ? ` · ⭐ ${pl.rating}` : ""}{pl.price_level ? ` · ${pl.price_level}` : ""}{pl.from_hotel_min != null ? ` · ${pl.from_hotel_min} min` : ""}</div>}
             <div className="mt-3 flex flex-wrap gap-2">{nav && <a href={nav} target="_blank" rel="noopener noreferrer" className="btn btn-teal btn-sm">{t("ui.map.navigate")}</a>}{pl && <Link href={`${base}/map?focus=${pl.id}`} className="btn btn-sm">🗺 {t("item.map")}</Link>}{canEdit && <Link href={`${base}/plan/${i.id}/edit#address`} className="btn btn-sm">✏️ {t("item.editAddress")}</Link>}</div>
+          </div>
+          <div className="card mt-3"><div className="eyebrow mb-2">{t("item.photos")}{album.length ? ` · ${album.length}` : ""}</div>
+            {album.length > 0 && <div className="mb-3 grid grid-cols-3 gap-2">{album.map(ph2 => <div key={ph2.id} className="relative overflow-hidden rounded-xl bg-surface-2">
+              <a href={ph2.url} target="_blank" rel="noopener noreferrer" className="block"><img src={ph2.url} alt={ph2.name} loading="lazy" className="aspect-square w-full object-cover" /></a>
+              {coverId === ph2.id && <span className="absolute bottom-1 left-1 rounded-md bg-sun px-1.5 py-0.5 text-[0.6875rem] font-extrabold text-[#17302f]">★ {t("item.cover")}</span>}
+              {canEdit && <div className="absolute right-1 top-1 flex gap-1">
+                {coverId !== ph2.id && <form action={setItemCover}><input type="hidden" name="tripId" value={tripId} /><input type="hidden" name="itemId" value={i.id} /><input type="hidden" name="docId" value={ph2.id} /><button aria-label={t("item.setCover")} title={t("item.setCover")} className="flex h-8 w-8 items-center justify-center rounded-full bg-[rgba(12,20,24,.7)] text-white">★</button></form>}
+                {(ph2.added_by === user?.id || ["owner", "admin"].includes(b.members.find(m => m.user_id === user?.id)?.role || "")) && <form action={removeItemPhoto}><input type="hidden" name="tripId" value={tripId} /><input type="hidden" name="itemId" value={i.id} /><input type="hidden" name="docId" value={ph2.id} /><ConfirmButton message={t("item.removePhotoConfirm")} className="flex h-8 w-8 items-center justify-center rounded-full bg-[rgba(12,20,24,.7)] text-white">✕</ConfirmButton></form>}
+              </div>}
+            </div>)}</div>}
+            {canEdit && <ItemPhotoAdd tripId={tripId} itemId={i.id} />}
+            <p className="mt-2 text-[0.75rem] text-ink-3">{t("item.photosHint")}</p>
           </div>
           <div className="card mt-3"><div className="eyebrow mb-2">{t("item.who")}</div><div className="flex flex-wrap gap-1.5">{b.members.filter(m => i.participant_ids.includes(m.user_id)).map(m => <span key={m.user_id} className="pill pl-0.5"><Avatar p={m.profile} size="sm" /> {m.profile.name}</span>)}</div>
             {i.travel_min ? <div className="mt-3 border-t border-line-2 pt-3 text-[0.8125rem] text-ink-2">🚗 {t("item.fromPrevious", { n: i.travel_min })}</div> : null}

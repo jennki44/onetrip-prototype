@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { supabaseServer } from "@/lib/supabase/server";
-import { setRates, type TripBundle } from "./derive";
+import { setRates, type ItemPhoto, type TripBundle } from "./derive";
 import { loadRates } from "@/lib/rates";
 import type { Profile, TripMember } from "@/lib/supabase/types";
 
@@ -21,12 +21,19 @@ export const loadTrip = cache(async (tripId: string): Promise<TripBundle | null>
   setRates(await ratesP);
   if (!trip.data) return null;
   const ids = (members.data || []).map(m => m.user_id);
-  const { data: profiles } = (await sb.from("profiles").select("*").in("id", ids)) as unknown as { data: Profile[] | null };
+  // Activity photos live in the private documents bucket; one batched call turns them into links that last an hour.
+  const photoDocs = (documents.data || []).filter(d => d.linked_type === "item" && d.linked_id && d.storage_path && d.category === "Photos").sort((x, y) => x.created_at.localeCompare(y.created_at)).slice(0, 400);
+  const [{ data: profiles }, signed] = await Promise.all([
+    sb.from("profiles").select("*").in("id", ids) as unknown as Promise<{ data: Profile[] | null }>,
+    photoDocs.length ? sb.storage.from("documents").createSignedUrls(photoDocs.map(d => d.storage_path as string), 3600).then(r => r.data || []) : Promise.resolve([]),
+  ]);
+  const itemPhotos: Record<string, ItemPhoto[]> = {};
+  photoDocs.forEach((d, k) => { const url = signed[k]?.signedUrl; if (url) (itemPhotos[d.linked_id as string] ||= []).push({ id: d.id, url, name: d.name, added_by: d.added_by, created_at: d.created_at }); });
   const pmap = new Map((profiles || []).map(p => [p.id, p]));
   return {
     trip: trip.data, days: days.data || [], members: (members.data || []).map(m => ({ ...m, profile: pmap.get(m.user_id) || { id: m.user_id, name: "Traveller", initials: "?", color: "#8A949C", locale: "en", reporting_currency: null, created_at: "" } })),
     places: places.data || [], items: items.data || [], bookings: bookings.data || [], decisions: decisions.data || [], options: options.data || [], votes: votes.data || [],
-    expenses: expenses.data || [], shares: shares.data || [], settlements: settlements.data || [], notifications: (notifications.data || []).reverse(), activity: (activity.data || []).reverse(), notes: notes.data || [], documents: (documents.data || []).reverse(),
+    expenses: expenses.data || [], shares: shares.data || [], settlements: settlements.data || [], notifications: (notifications.data || []).reverse(), activity: (activity.data || []).reverse(), notes: notes.data || [], documents: (documents.data || []).reverse(), itemPhotos,
   };
 });
 
