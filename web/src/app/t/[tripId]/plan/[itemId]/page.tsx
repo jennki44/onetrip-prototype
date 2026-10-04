@@ -17,7 +17,8 @@ export default async function ItemDetail({ params }: { params: Promise<{ tripId:
   const base = `/t/${tripId}`; const rc = b.members.find(m => m.user_id === user?.id)?.profile.reporting_currency || b.trip.home_currency;
   const pl = place(b, i.place_id); const bk = b.bookings.find(x => x.id === i.booking_id); const dec = b.decisions.find(d => d.id === i.decision_id);
   const exps = b.expenses.filter(e => e.item_id === i.id); const spent = exps.reduce((a, e) => a + e.base_minor, 0);
-  const unlinked = b.expenses.filter(e => !e.item_id).sort((x, y) => y.date.localeCompare(x.date));
+  const unlinked = b.expenses.filter(e => e.item_id !== i.id).sort((x, y) => Number(!!x.item_id) - Number(!!y.item_id) || y.date.localeCompare(x.date));
+  const titleOf = (id: string | null) => { const o = b.items.find(x => x.id === id); return o ? itemTitle(o, locale) : ""; };
   const where = pl?.address || i.address || null; const nav = navUrl({ lat: pl?.lat, lng: pl?.lng, address: where, name: pl ? pl.name : null, near: b.trip.destination });
   const canEdit = ["owner", "admin", "traveller"].includes(b.members.find(m => m.user_id === user?.id)?.role || "");
   const docs = b.documents.filter(d => (d.linked_type === "booking" && d.linked_id === i.booking_id) || (d.linked_type === "item" && d.linked_id === i.id));
@@ -55,7 +56,7 @@ export default async function ItemDetail({ params }: { params: Promise<{ tripId:
             {canEdit && <div className="mt-3 flex flex-col gap-2 border-t border-line-2 pt-3">
               <Link href={`${base}/money/scan?for=${i.id}`} className="btn btn-sun w-full">🧾 {t("item.addReceipt")}</Link>
               {unlinked.length ? <form action={setExpenseItem} className="flex flex-col gap-2"><input type="hidden" name="tripId" value={tripId} /><input type="hidden" name="itemId" value={i.id} /><input type="hidden" name="back" value="item" /><input type="hidden" name="backItem" value={i.id} />
-                <label className="text-[0.8125rem] font-extrabold text-ink-2">{t("item.linkExisting")}<select name="expenseId" required defaultValue="" className="input mt-1"><option value="" disabled>{t("item.pickExpense")}</option>{unlinked.map(e => <option key={e.id} value={e.id}>{e.date.slice(5)} · {e.merchant} · {fmtMoney(e.amount_minor, e.currency)}</option>)}</select></label>
+                <label className="text-[0.8125rem] font-extrabold text-ink-2">{t("item.linkExisting")}<select name="expenseId" required defaultValue="" className="input mt-1"><option value="" disabled>{t("item.pickExpense")}</option>{unlinked.map(e => <option key={e.id} value={e.id}>{new Date(e.date + "T00:00:00").toLocaleDateString(locale.startsWith("zh") ? "zh-Hant-HK" : "en-AU", { day: "numeric", month: "short" })} · {e.merchant} · {fmtMoney(e.amount_minor, e.currency)}{e.item_id ? ` · ${t("item.linkedTo", { name: titleOf(e.item_id) })}` : ""}</option>)}</select></label>
                 <button className="btn w-full">🔗 {t("item.linkBtn")}</button></form> : <p className="text-[0.75rem] text-ink-3">{t("item.noUnlinked")}</p>}
             </div>}
           </div>
