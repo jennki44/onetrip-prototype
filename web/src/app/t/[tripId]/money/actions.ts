@@ -121,6 +121,21 @@ export async function removeAttachment(form: FormData) {
   revalidatePath(`/t/${p.tripId}`, "layout"); redirect(`/t/${p.tripId}/money/${p.expenseId}`);
 }
 
+/** Connect an expense to an activity (or disconnect it). Works from either side; `back` says which page to return to. */
+export async function setExpenseItem(form: FormData) {
+  const p = z.object({ tripId: z.string().uuid(), expenseId: z.string().uuid(), itemId: z.union([z.string().uuid(), z.literal("")]), back: z.enum(["item", "expense"]), backItem: z.union([z.string().uuid(), z.literal("")]).optional() })
+    .safeParse({ tripId: form.get("tripId"), expenseId: form.get("expenseId") || "", itemId: form.get("itemId") || "", back: form.get("back"), backItem: form.get("backItem") || "" });
+  if (!p.success) redirect("/trips");
+  const d = p.data; const sb = await supabaseServer(); const { data: { user } } = await sb.auth.getUser(); if (!user) redirect("/signin");
+  const b = await loadTrip(d.tripId); if (!b) redirect("/trips");
+  const e = b.expenses.find(x => x.id === d.expenseId); const item = d.itemId ? b.items.find(x => x.id === d.itemId) : null;
+  const dest = d.back === "item" ? `/t/${d.tripId}/plan/${d.backItem || d.itemId || e?.item_id || ""}` : `/t/${d.tripId}/money/${d.expenseId}`;
+  if (!e || (d.itemId && !item)) redirect(dest);
+  await sb.from("expenses").update({ item_id: item?.id || null, place_id: e.place_id || item?.place_id || null }).eq("id", e.id);
+  await sb.from("activity_log").insert({ trip_id: d.tripId, user_id: user.id, text: item ? `Linked the ${e.merchant} expense to ${item.title}.` : `Unlinked the ${e.merchant} expense from its activity.` });
+  revalidatePath(`/t/${d.tripId}`, "layout"); redirect(dest);
+}
+
 export async function markPaid(form: FormData) {
   const p = z.object({ tripId: z.string().uuid(), index: z.coerce.number().int().min(0) }).parse({ tripId: form.get("tripId"), index: form.get("index") });
   const sb = await supabaseServer(); const { data: { user } } = await sb.auth.getUser(); if (!user) redirect("/signin");

@@ -10,3 +10,11 @@ export async function geocode(query: string): Promise<{ lat: number; lng: number
     return { lat: Math.round(lat * 1e5) / 1e5, lng: Math.round(lng * 1e5) / 1e5 };
   } catch { return null; }
 }
+
+/** Try a few phrasings of the same place, most specific first: the address as typed, then with the trip destination appended. */
+export async function geocodeAny(text: string, near?: string | null): Promise<{ lat: number; lng: number } | null> {
+  const t = text.trim(); if (!t) return null;
+  const tries = [t, near && !t.toLowerCase().includes(near.split(",")[0].trim().toLowerCase()) ? `${t}, ${near}` : null, near ? `${t}, ${near.split(",").slice(-1)[0].trim()}` : null].filter((q, i, a): q is string => !!q && a.indexOf(q) === i);
+  for (const q of tries.slice(0, 3)) { const hit = await geocode(q); if (hit) return hit; }
+  return null;
+}

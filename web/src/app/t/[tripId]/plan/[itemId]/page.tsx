@@ -5,6 +5,10 @@ import { getT } from "@/lib/i18n/server";
 import { currentUser } from "@/lib/supabase/server";
 import { dayLabel, decTitle, fmtTime, inCurrency, itemFlag, itemNote, itemTitle, photoOf, place, placeName } from "@/lib/trip/derive";
 import { Avatar, Pill } from "@/components/ui";
+import { ConfirmButton } from "@/components/ConfirmButton";
+import { navUrl } from "@/lib/nav";
+import { fmtMoney } from "@/lib/money";
+import { setExpenseItem } from "../../money/actions";
 
 export default async function ItemDetail({ params }: { params: Promise<{ tripId: string; itemId: string }> }) {
   const { tripId, itemId } = await params;
@@ -12,7 +16,10 @@ export default async function ItemDetail({ params }: { params: Promise<{ tripId:
   if (!b) notFound(); const i = b.items.find(x => x.id === itemId); if (!i) notFound();
   const base = `/t/${tripId}`; const rc = b.members.find(m => m.user_id === user?.id)?.profile.reporting_currency || b.trip.home_currency;
   const pl = place(b, i.place_id); const bk = b.bookings.find(x => x.id === i.booking_id); const dec = b.decisions.find(d => d.id === i.decision_id);
-  const exps = b.expenses.filter(e => e.item_id === i.id || (i.place_id && e.place_id === i.place_id && e.date === b.trip.start_date.replace(/\d+$/, m => String(Number(m) + i.day - 1).padStart(2, "0"))));
+  const exps = b.expenses.filter(e => e.item_id === i.id); const spent = exps.reduce((a, e) => a + e.base_minor, 0);
+  const unlinked = b.expenses.filter(e => !e.item_id).sort((x, y) => y.date.localeCompare(x.date));
+  const where = pl?.address || i.address || null; const nav = navUrl({ lat: pl?.lat, lng: pl?.lng, address: where, name: pl ? pl.name : null, near: b.trip.destination });
+  const canEdit = ["owner", "admin", "traveller"].includes(b.members.find(m => m.user_id === user?.id)?.role || "");
   const docs = b.documents.filter(d => (d.linked_type === "booking" && d.linked_id === i.booking_id) || (d.linked_type === "item" && d.linked_id === i.id));
   const ph = photoOf(b, i);
   const tone = i.status === "confirmed" ? "good" : i.status === "voting" ? "warn" : i.status === "cancelled" ? "bad" : i.status === "proposed" ? "teal" : undefined;
@@ -23,10 +30,14 @@ export default async function ItemDetail({ params }: { params: Promise<{ tripId:
       <div className="mb-4 flex items-start gap-3.5"><span className="text-[2.75rem]">{i.emoji}</span><div className="flex-1"><h1 className="text-[1.75rem] leading-tight">{itemTitle(i, locale)}</h1><p className="text-[0.9063rem] text-ink-2">{dayLabel(b.trip, i.day, locale, true)} · {fmtTime(i.start_time, locale)}{i.end_time && i.end_time !== i.start_time ? ` – ${fmtTime(i.end_time, locale)}` : ""}</p><div className="mt-2 flex flex-wrap gap-1.5"><Pill tone={tone}>{t(`status.${i.status}`)}</Pill>{i.booking === "booked" && <Pill tone="good">🎟 {t("status.booked")}</Pill>}{i.booking === "needed" && <Pill tone="bad">{t("status.notBooked")}</Pill>}{i.cost_minor ? <Pill>{t("ui.est")} {inCurrency(b, i.cost_minor, rc)}</Pill> : null}</div></div><Link href={`${base}/plan/${i.id}/edit`} className="btn btn-outline btn-sm">{t("common.edit")}</Link></div>
       <div className="md:grid md:grid-cols-[1.15fr_.85fr] md:gap-6">
         <div>
-          {pl && <Link href={`${base}/map?focus=${pl.id}`} className="card flex items-center justify-between"><div><div className="eyebrow mb-1">{t("ui.place")}</div><b>{pl.emoji} {placeName(pl, locale)}</b><div className="text-[0.7813rem] text-ink-3">{pl.area}{pl.rating ? ` · ⭐ ${pl.rating}` : ""}{pl.price_level ? ` · ${pl.price_level}` : ""}{pl.from_hotel_min != null ? ` · ${pl.from_hotel_min} min` : ""}</div></div><span className="text-ink-3">›</span></Link>}
+          <div className="card"><div className="eyebrow mb-1">{t("item.where")}</div>
+            {pl ? <Link href={`${base}/map?focus=${pl.id}`} className="flex items-center justify-between"><b>{pl.emoji} {placeName(pl, locale)}</b><span className="text-ink-3">›</span></Link> : null}
+            {where ? <div className="mt-1 text-[0.9rem] text-ink-2">📍 {where}</div> : !pl ? <p className="text-[0.9rem] text-ink-2">{t("item.addWhere")}</p> : null}
+            {pl && <div className="text-[0.7813rem] text-ink-3">{pl.area}{pl.rating ? ` · ⭐ ${pl.rating}` : ""}{pl.price_level ? ` · ${pl.price_level}` : ""}{pl.from_hotel_min != null ? ` · ${pl.from_hotel_min} min` : ""}</div>}
+            <div className="mt-3 flex flex-wrap gap-2">{nav && <a href={nav} target="_blank" rel="noopener noreferrer" className="btn btn-teal btn-sm">{t("ui.map.navigate")}</a>}{pl && <Link href={`${base}/map?focus=${pl.id}`} className="btn btn-sm">🗺 {t("item.map")}</Link>}{canEdit && <Link href={`${base}/plan/${i.id}/edit#address`} className="btn btn-sm">✏️ {t("item.editAddress")}</Link>}</div>
+          </div>
           <div className="card mt-3"><div className="eyebrow mb-2">{t("item.who")}</div><div className="flex flex-wrap gap-1.5">{b.members.filter(m => i.participant_ids.includes(m.user_id)).map(m => <span key={m.user_id} className="pill pl-0.5"><Avatar p={m.profile} size="sm" /> {m.profile.name}</span>)}</div>
             {i.travel_min ? <div className="mt-3 border-t border-line-2 pt-3 text-[0.8125rem] text-ink-2">🚗 {t("item.fromPrevious", { n: i.travel_min })}</div> : null}
-            {i.address && <div className="mt-2 text-[0.8125rem] text-ink-2">📍 {i.address}</div>}
             {itemNote(i, locale) && <div className="mt-2 text-[0.8125rem] text-ink-2">📝 {itemNote(i, locale)}</div>}
             {itemFlag(i, locale) && <div className="mt-3 flex gap-2 rounded-xl bg-warn-soft p-3 text-[0.8125rem]">📌<span>{itemFlag(i, locale)}</span></div>}</div>
         </div>
@@ -36,11 +47,18 @@ export default async function ItemDetail({ params }: { params: Promise<{ tripId:
               {bk ? <Link href={`${base}/bookings/${bk.id}`} className="flex items-center gap-3 py-3"><span className="text-[1.1875rem]">🎟</span><div className="flex-1"><b>{bk.title}</b><div className="text-[0.7813rem] text-ink-3">{bk.reference ? `Ref ${bk.reference} · ` : ""}{bk.status}</div></div><span className="text-ink-3">›</span></Link>
                 : i.booking === "needed" ? <div className="flex items-center gap-3 py-3"><span className="text-[1.1875rem]">🎟</span><div className="flex-1"><b className="text-bad">{t("item.bookingMissing")}</b><div className="text-[0.7813rem] text-ink-3">{t("item.dropConfirmation")}</div></div><Link href={`${base}/inbox?for=${i.id}`} className="btn btn-sun btn-sm">{t("item.resolve")}</Link></div> : null}
               {dec && <Link href={`${base}/decisions/${dec.id}`} className="flex items-center gap-3 py-3"><span className="text-[1.1875rem]">🗳</span><div className="flex-1"><b>{decTitle(dec, locale)}</b><div className="text-[0.7813rem] text-ink-3">{t(`decisions.${dec.status === "confirmed" ? "confirmed" : "needsVotes"}`)}</div></div><span className="text-ink-3">›</span></Link>}
-              {exps.map(e => <Link key={e.id} href={`${base}/money/${e.id}`} className="flex items-center gap-3 py-3"><span className="text-[1.1875rem]">💰</span><div className="flex-1"><b>{inCurrency(b, e.base_minor, b.trip.base_currency)} · {e.merchant}</b><div className="text-[0.7813rem] text-ink-3">{t("money.paidBy", { name: b.members.find(m => m.user_id === e.payer_id)?.profile.name || "" })}</div></div><span className="text-ink-3">›</span></Link>)}
               {docs.map(d => <Link key={d.id} href={`${base}/documents`} className="flex items-center gap-3 py-3"><span className="text-[1.1875rem]">📄</span><div className="flex-1"><b>{d.name}</b><div className="text-[0.7813rem] text-ink-3">{d.category}</div></div><span className="text-ink-3">›</span></Link>)}
-              {!bk && i.booking !== "needed" && !dec && !exps.length && !docs.length && <p className="py-2 text-[0.7813rem] text-ink-3">{t("item.nothingLinked")}</p>}
+              {!bk && i.booking !== "needed" && !dec && !docs.length && <p className="py-2 text-[0.7813rem] text-ink-3">{t("item.nothingLinked")}</p>}
             </div></div>
-          <div className="mt-4 flex gap-2.5"><Link href={`${base}/money/scan?for=${i.id}`} className="btn flex-1">🧾 {t("item.addReceipt")}</Link>{pl && pl.lat != null && pl.lng != null ? <a href={`https://www.google.com/maps/dir/?api=1&destination=${pl.lat},${pl.lng}`} target="_blank" rel="noopener noreferrer" className="btn btn-teal flex-1">{t("ui.map.navigate")}</a> : <Link href={`${base}/map?focus=${pl?.id || ""}`} className="btn flex-1">🗺 {t("item.map")}</Link>}</div>
+          <div className="card mt-3"><div className="eyebrow mb-2 flex items-center justify-between"><span>{t("item.spending")}</span>{exps.length > 0 && <span className="num normal-case tracking-normal text-[0.9rem] font-extrabold text-ink">{t("item.spendTotal")}: {inCurrency(b, spent, b.trip.base_currency)}</span>}</div>
+            {exps.length ? <div className="divide-y divide-line-2">{exps.map(e => <div key={e.id} className="flex items-center gap-2 py-2.5"><Link href={`${base}/money/${e.id}`} className="flex min-w-0 flex-1 items-center gap-3"><span className="text-[1.1875rem]">{e.emoji || "💰"}</span><span className="min-w-0 flex-1"><b className="block truncate">{e.merchant}</b><span className="block text-[0.7813rem] text-ink-3">{fmtMoney(e.amount_minor, e.currency)} · {t("money.paidBy", { name: b.members.find(m => m.user_id === e.payer_id)?.profile.name || "" })}{e.receipt_id ? " · 🧾" : ""}</span></span></Link>{canEdit && <form action={setExpenseItem}><input type="hidden" name="tripId" value={tripId} /><input type="hidden" name="expenseId" value={e.id} /><input type="hidden" name="itemId" value="" /><input type="hidden" name="back" value="item" /><input type="hidden" name="backItem" value={i.id} /><ConfirmButton message={t("item.unlink") + "?"} className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-2 text-ink-3">✕</ConfirmButton></form>}</div>)}</div> : <p className="text-[0.85rem] text-ink-3">{t("item.noSpending")}</p>}
+            {canEdit && <div className="mt-3 flex flex-col gap-2 border-t border-line-2 pt-3">
+              <Link href={`${base}/money/scan?for=${i.id}`} className="btn btn-sun w-full">🧾 {t("item.addReceipt")}</Link>
+              {unlinked.length ? <form action={setExpenseItem} className="flex flex-col gap-2"><input type="hidden" name="tripId" value={tripId} /><input type="hidden" name="itemId" value={i.id} /><input type="hidden" name="back" value="item" /><input type="hidden" name="backItem" value={i.id} />
+                <label className="text-[0.8125rem] font-extrabold text-ink-2">{t("item.linkExisting")}<select name="expenseId" required defaultValue="" className="input mt-1"><option value="" disabled>{t("item.pickExpense")}</option>{unlinked.map(e => <option key={e.id} value={e.id}>{e.date.slice(5)} · {e.merchant} · {fmtMoney(e.amount_minor, e.currency)}</option>)}</select></label>
+                <button className="btn w-full">🔗 {t("item.linkBtn")}</button></form> : <p className="text-[0.75rem] text-ink-3">{t("item.noUnlinked")}</p>}
+            </div>}
+          </div>
         </div>
       </div>
     </div>

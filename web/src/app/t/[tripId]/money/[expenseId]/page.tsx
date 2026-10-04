@@ -9,7 +9,7 @@ import { Avatar } from "@/components/ui";
 import { fmtMoney } from "@/lib/money";
 import { ConfirmButton } from "@/components/ConfirmButton";
 import { supabaseServer } from "@/lib/supabase/server";
-import { deleteExpense, removeAttachment } from "../actions";
+import { deleteExpense, removeAttachment, setExpenseItem } from "../actions";
 import { ExpenseAttach } from "@/components/ExpenseAttach";
 import type { ReceiptItem } from "@/lib/supabase/types";
 
@@ -49,6 +49,9 @@ export default async function ExpenseDetail({ params, searchParams }: { params: 
         <p className="mt-2 text-[0.75rem] text-ink-3">{t("ui.attachHint")}</p>
       </div>
       {e.note && <div className="card mt-3 text-[0.875rem]">📝 {e.note}</div>}
+      {canAdd && <form action={setExpenseItem} className="card mt-3"><input type="hidden" name="tripId" value={tripId} /><input type="hidden" name="expenseId" value={e.id} /><input type="hidden" name="back" value="expense" />
+        <label className="text-[0.8125rem] font-extrabold text-ink-2">{t("ui.relatedActivity")}<select name="itemId" defaultValue={e.item_id || ""} className="input mt-1"><option value="">{t("ui.noActivity")}</option>{[...b.items].sort((x, y) => x.day - y.day || x.start_time.localeCompare(y.start_time)).map(it => <option key={it.id} value={it.id}>{t("ui.dayN", { n: it.day })} · {itemTitle(it, locale)}</option>)}</select></label>
+        <button className="btn btn-sm mt-2">🔗 {t("ui.linkSave")}</button></form>}
       <div className="card mt-3"><div className="eyebrow mb-2">{t("ui.connected")}</div><div className="flex flex-wrap gap-1.5">{pl && <Link href={`${base}/map?focus=${pl.id}`} className="pill pill-teal">📍 {placeName(pl, locale)}</Link>}{item && <Link href={`${base}/plan/${item.id}`} className="pill pill-teal">📅 {itemTitle(item, locale)}</Link>}{bk && <Link href={`${base}/bookings/${bk.id}`} className="pill pill-teal">🎟 {bk.title}</Link>}<Link href={`${base}/money?tab=expenses&cat=${e.category}`} className="pill pill-teal">💵 {catLabel(t, e.category)}</Link><Link href={`${base}/money?tab=balances`} className="pill pill-teal">⚖️ {t("money.balances")}</Link></div></div>
       {canChange && <form action={deleteExpense} className="mt-6 text-center"><input type="hidden" name="tripId" value={tripId} /><input type="hidden" name="expenseId" value={e.id} /><ConfirmButton message={t("ui.deleteConfirm")} className="btn btn-sm text-bad">🗑️ {t("ui.deleteExpense")}</ConfirmButton></form>}
     </div>
