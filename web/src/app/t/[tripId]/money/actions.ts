@@ -90,6 +90,7 @@ export async function deleteExpense(form: FormData) {
   const b = await loadTrip(p.tripId); if (!b) redirect("/trips");
   const e = b.expenses.find(x => x.id === p.expenseId); if (!e) redirect(`/t/${p.tripId}/money?tab=expenses`);
   await sb.from("expense_shares").delete().eq("expense_id", e.id);
+  await sb.from("documents").delete().eq("trip_id", p.tripId).eq("linked_type", "expense").eq("linked_id", e.id);
   const { error } = await sb.from("expenses").delete().eq("id", e.id);
   if (error) redirect(`/t/${p.tripId}/money/${e.id}?error=${encodeURIComponent(error.message)}`);
   if (e.receipt_id) { await sb.from("receipt_items").delete().eq("receipt_id", e.receipt_id); await sb.from("receipts").delete().eq("id", e.receipt_id); }
@@ -97,6 +98,27 @@ export async function deleteExpense(form: FormData) {
   await sb.from("activity_log").insert({ trip_id: p.tripId, user_id: user.id, text: `Deleted the ${e.merchant} expense (${fmtMoney(e.amount_minor, e.currency)}).` });
   await sb.from("notifications").insert({ trip_id: p.tripId, icon: "🗑️", text: `${who} deleted the ${e.merchant} expense.`, link: { screen: "money", id: "expenses" } });
   revalidatePath(`/t/${p.tripId}`, "layout"); redirect(`/t/${p.tripId}/money?tab=expenses&deleted=1`);
+}
+
+/** Link an uploaded photo or document (documents bucket) to an expense so every traveller can see it. */
+export async function attachToExpense(raw: { tripId: string; expenseId: string; fileName: string; storagePath: string; sizeBytes: number }) {
+  const p = z.object({ tripId: z.string().uuid(), expenseId: z.string().uuid(), fileName: z.string().trim().min(1).max(200), storagePath: z.string().max(400), sizeBytes: z.number().int().nonnegative() }).parse(raw);
+  if (!p.storagePath.startsWith(`${p.tripId}/expenses/${p.expenseId}/`)) throw new Error("Bad storage path");
+  const sb = await supabaseServer(); const { data: { user } } = await sb.auth.getUser(); if (!user) redirect("/signin");
+  const { data: e } = await sb.from("expenses").select("id, merchant").eq("id", p.expenseId).eq("trip_id", p.tripId).maybeSingle();
+  if (!e) throw new Error("That expense is not in this trip");
+  const { error } = await sb.from("documents").insert({ trip_id: p.tripId, name: p.fileName, category: "Receipts", storage_path: p.storagePath, size_bytes: p.sizeBytes, linked_type: "expense", linked_id: p.expenseId, added_by: user.id });
+  if (error) throw new Error(error.message);
+  await sb.from("activity_log").insert({ trip_id: p.tripId, user_id: user.id, text: `Added ${p.fileName} to the ${(e as { merchant: string }).merchant} expense.` });
+  revalidatePath(`/t/${p.tripId}`, "layout");
+}
+
+/** Remove an attachment from an expense (the stored file is left in place; only the link is removed). */
+export async function removeAttachment(form: FormData) {
+  const p = z.object({ tripId: z.string().uuid(), expenseId: z.string().uuid(), docId: z.string().uuid() }).parse({ tripId: form.get("tripId"), expenseId: form.get("expenseId"), docId: form.get("docId") });
+  const sb = await supabaseServer(); const { data: { user } } = await sb.auth.getUser(); if (!user) redirect("/signin");
+  await sb.from("documents").delete().eq("id", p.docId).eq("trip_id", p.tripId).eq("linked_type", "expense").eq("linked_id", p.expenseId);
+  revalidatePath(`/t/${p.tripId}`, "layout"); redirect(`/t/${p.tripId}/money/${p.expenseId}`);
 }
 
 export async function markPaid(form: FormData) {
