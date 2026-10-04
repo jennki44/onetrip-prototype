@@ -1,6 +1,7 @@
 /* Derived views over a loaded trip: today, spend, forecast, balances, health.
    Pure functions over the TripBundle so they run on the server and in Trip Brain. */
 import type { Trip, TripDay, Profile, TripMember, Place, ItineraryItem, Booking, Decision, DecisionOption, Vote, Expense, ExpenseShare, Settlement, Notification, ActivityLog, Note, Document } from "@/lib/supabase/types";
+import { FALLBACK_PER_AUD, type RateTable } from "@/lib/rates";
 import { balances as calcBalances, settlementPlan as calcPlan, toMinor, convertMinor, fmtMoney } from "@/lib/money";
 
 export interface TripBundle {
@@ -10,7 +11,10 @@ export interface TripBundle {
 }
 
 /* Fixed demo rates: units of `to` per 1 unit of `from`. Replace with a provider later; never invented by Trip Brain. */
-const RATES_PER_AUD: Record<string, number> = { AUD: 1, HKD: 5.13, USD: 0.66, GBP: 0.52, EUR: 0.60, JPY: 99.0, SGD: 0.88, NZD: 1.08, TWD: 21.2, CNY: 4.75 };
+let RATES_PER_AUD: Record<string, number> = { ...FALLBACK_PER_AUD }; let RATES_META: { updated: string | null; live: boolean } = { updated: null, live: false };
+/** Install today's rate table (called by loadTrip on the server before anything converts money). */
+export function setRates(t: RateTable) { RATES_PER_AUD = { ...FALLBACK_PER_AUD, ...t.perAud }; RATES_META = { updated: t.updated, live: t.live }; }
+export const ratesMeta = () => RATES_META;
 export function rate(from: string, to: string): number { const a = RATES_PER_AUD[from], b = RATES_PER_AUD[to]; if (!a || !b) return 1; return b / a; }
 
 export const REACT_WEIGHT = { love: 3, good: 2, maybe: 1, no: -2 } as const;

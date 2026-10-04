@@ -4,7 +4,7 @@ import { loadTrip } from "@/lib/trip/load";
 import { getT } from "@/lib/i18n/server";
 import { currentUser } from "@/lib/supabase/server";
 import { demoNow } from "@/lib/trip/clock";
-import { budgetBase, catBudgetBase, dayCount, dayDate, forecastBase, inCurrency, netBalances, nowSlots, plan, spentBase, spentByCategory, fmtBase , isoDate } from "@/lib/trip/derive";
+import { budgetBase, catBudgetBase, dayCount, dayDate, forecastBase, inCurrency, netBalances, nowSlots, plan, spentBase, spentByCategory, fmtBase , isoDate, ratesMeta } from "@/lib/trip/derive";
 import { Avatar, Bar, Empty, PageHead } from "@/components/ui";
 import { fmtMoney } from "@/lib/money";
 import { CurrencyPicker } from "@/components/CurrencyPicker";
@@ -52,6 +52,7 @@ export default async function Money({ params, searchParams }: { params: Promise<
           <div><div className="card mt-4 md:mt-0"><div className="eyebrow mb-2">{t("money.settleUp")}</div>{pl.length ? <><div className="text-[1rem] font-bold">{t("money.payments", { n: pl.length })}</div><p className="text-[0.7813rem] text-ink-2">{t("money.outstanding")}: <b>{inCurrency(b, outstanding, rc)}</b></p><Link href={`${base}/money/settle`} className="btn btn-sun mt-3 w-full">{t("money.simplify")}</Link></> : <div className="text-[1rem] font-bold">{t("ui.allSettledParty")}</div>}</div>
             <div className="card mt-3"><div className="eyebrow mb-2">{t("ui.paymentsMade")}</div>{b.settlements.length ? b.settlements.map(s => <div key={s.id} className="flex justify-between border-t border-line-2 py-1.5 text-[0.7813rem] first:border-t-0"><span>{nameOf(s.from_user)} → {nameOf(s.to_user)}</span><span className="num"><b>{fmtBase(b, s.amount_minor)}</b> · {new Date(s.date + "T00:00:00").toLocaleDateString("en-AU", { day: "numeric", month: "short" })}</span></div>) : <p className="text-[0.7813rem] text-ink-3">{t("ui.noneYet")}</p>}</div></div>
         </div>); })()}
+      {(() => { const m = ratesMeta(); return <p className="mt-5 text-[0.75rem] text-ink-3">{m.live && m.updated ? t("ui.ratesLive", { date: new Date(m.updated).toLocaleDateString(locale.startsWith("zh") ? "zh-Hant-HK" : "en-AU", { day: "numeric", month: "short", year: "numeric" }) }) : t("ui.ratesFallback")} <a href="https://www.exchangerate-api.com" target="_blank" rel="noopener noreferrer" className="underline">{t("ui.ratesBy")}</a></p>; })()}
     </div>
   );
 }
