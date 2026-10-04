@@ -2,7 +2,7 @@
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useT } from "@/lib/i18n/provider";
-import { createExpense, type ExpenseInput } from "@/app/t/[tripId]/money/actions";
+import { createExpense, updateExpense, type ExpenseInput } from "@/app/t/[tripId]/money/actions";
 import { fmtMoney, splitEqual, splitItemised, splitPercent, splitShares, toMinor, type SplitType } from "@/lib/money";
 
 type Member = { id: string; name: string; initials: string; color: string };
@@ -11,14 +11,15 @@ const CURRENCIES = ["AUD", "HKD", "USD", "GBP", "EUR", "JPY", "SGD", "TWD"];
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) { return <label className="flex flex-col gap-1.5 text-[0.7813rem] font-extrabold text-ink-2">{label}{children}</label>; }
 
-export function ExpenseForm({ tripId, baseCurrency, members, meId, categories, defaultDate, places, item, initialItems, initial }: {
+export function ExpenseForm({ tripId, expenseId, baseCurrency, members, meId, categories, defaultDate, places, item, initialItems, initial }: {
+  expenseId?: string;
   tripId: string; baseCurrency: string; members: Member[]; meId: string; categories: string[]; defaultDate: string; places: { id: string; name: string }[];
-  item: { id: string; placeId: string | null; title: string } | null; initialItems?: Item[]; initial?: Partial<{ merchant: string; amount: string; date: string; category: string; currency: string; receiptImagePath: string }>;
+  item: { id: string; placeId: string | null; title: string } | null; initialItems?: Item[]; initial?: Partial<{ merchant: string; amount: string; date: string; category: string; currency: string; receiptImagePath: string; note: string; payerId: string; participants: string[]; split: SplitType; vals: Record<string, string> }>;
 }) {
   const { t } = useT(); const router = useRouter(); const [pending, start] = useTransition(); const [error, setError] = useState<string | null>(null);
   const [merchant, setMerchant] = useState(initial?.merchant || ""); const [amount, setAmount] = useState(initial?.amount || ""); const [currency, setCurrency] = useState(initial?.currency && /^[A-Z]{3}$/.test(initial.currency) ? initial.currency : baseCurrency); const [date, setDate] = useState(initial?.date || defaultDate);
-  const [category, setCategory] = useState(initial?.category || categories[0]); const [payer, setPayer] = useState(meId); const [participants, setParticipants] = useState<string[]>(members.map(m => m.id));
-  const [split, setSplit] = useState<SplitType>(initialItems?.length ? "itemised" : "equal"); const [vals, setVals] = useState<Record<string, string>>({}); const [items, setItems] = useState<Item[]>(initialItems || []); const [note, setNote] = useState("");
+  const [category, setCategory] = useState(initial?.category || categories[0]); const [payer, setPayer] = useState(initial?.payerId || meId); const [participants, setParticipants] = useState<string[]>(initial?.participants?.length ? initial.participants : members.map(m => m.id));
+  const [split, setSplit] = useState<SplitType>(initial?.split || (initialItems?.length ? "itemised" : "equal")); const [vals, setVals] = useState<Record<string, string>>(initial?.vals || {}); const [items, setItems] = useState<Item[]>(initialItems || []); const [note, setNote] = useState(initial?.note || "");
   const totalMinor = toMinor(Number(amount) || 0, currency);
   const shares = useMemo(() => {
     if (split === "equal") return splitEqual(totalMinor, participants);
@@ -37,7 +38,7 @@ export function ExpenseForm({ tripId, baseCurrency, members, meId, categories, d
     try {
       const input: ExpenseInput = { tripId, merchant, amount: Number(amount), currency, date, category, payerId: payer, participants: split === "itemised" ? Object.keys(shares) : participants, split, note, itemId: item?.id || null, placeId: item?.placeId || null, emoji: category === "Food" ? "🍽️" : category === "Transport" ? "🚗" : category === "Activities" ? "🎟️" : category === "Shopping" ? "🛍️" : category === "Accommodation" ? "🏨" : "💰",
         splitValues: split === "equal" || split === "itemised" ? undefined : Object.fromEntries(participants.map(id => [id, Number(vals[id]) || 0])), items: split === "itemised" ? items.filter(it => Number(it.amount) > 0).map((it, k) => ({ name: it.name.trim() || `${merchant.trim() || t("receipt.items")} ${k + 1}`, amount: Number(it.amount) || 0, userIds: it.userIds.length ? it.userIds : participants })) : undefined, receiptImagePath: initial?.receiptImagePath || null };
-      const id = await createExpense(input); router.push(`/t/${tripId}/money/${id}?saved=1`);
+      const id = expenseId ? await updateExpense(expenseId, input) : await createExpense(input); router.push(`/t/${tripId}/money/${id}?${expenseId ? "updated" : "saved"}=1`);
     } catch (e) { setError(e instanceof Error ? e.message : t("errors.generic")); }
   });
   return (
@@ -63,7 +64,7 @@ export function ExpenseForm({ tripId, baseCurrency, members, meId, categories, d
       </div>
       <Field label={t("money.notes")}><input className="input" value={note} onChange={e => setNote(e.target.value)} /></Field>
       {error && <p className="text-[0.8125rem] text-bad">{error}</p>}
-      <button type="button" disabled={!ok || pending} onClick={submit} className="btn btn-sun w-full py-4 text-[1rem] disabled:opacity-50">{pending ? t("common.loading") : t("money.saveExpense")}</button>
+      <button type="button" disabled={!ok || pending} onClick={submit} className="btn btn-sun w-full py-4 text-[1rem] disabled:opacity-50">{pending ? t("common.loading") : expenseId ? t("common.save") : t("money.saveExpense")}</button>
     </div>
   );
 }
