@@ -10,14 +10,14 @@ import { isLocale, type Locale, DEFAULT_LOCALE, LOCALE_COOKIE } from "@/lib/i18n
 
 const baloo = Baloo_2({ variable: "--font-baloo", subsets: ["latin"], weight: ["600", "700", "800"] });
 const nunito = Nunito({ variable: "--font-nunito", subsets: ["latin"], weight: ["400", "600", "700", "800"] });
-const notoTC = Noto_Sans_TC({ variable: "--font-noto-tc", subsets: ["latin"], weight: ["400", "500", "700"] });
+const notoTC = Noto_Sans_TC({ variable: "--font-noto-tc", subsets: ["latin"], weight: ["400", "500", "700"] , preload: false });
 // Faces for the selectable looks
-const fredoka = Fredoka({ variable: "--font-fredoka", subsets: ["latin"], weight: ["500", "600", "700"] });
-const quicksand = Quicksand({ variable: "--font-quicksand", subsets: ["latin"], weight: ["500", "600", "700"] });
-const outfit = Outfit({ variable: "--font-outfit", subsets: ["latin"], weight: ["400", "500", "600", "700"] });
-const caveat = Caveat({ variable: "--font-caveat", subsets: ["latin"], weight: ["700"] });
-const rubik = Rubik({ variable: "--font-rubik", subsets: ["latin"], weight: ["400", "500", "600", "700"] });
-const sora = Sora({ variable: "--font-sora", subsets: ["latin"], weight: ["600", "700"] });
+const fredoka = Fredoka({ variable: "--font-fredoka", subsets: ["latin"], weight: ["500", "600", "700"] , preload: false });
+const quicksand = Quicksand({ variable: "--font-quicksand", subsets: ["latin"], weight: ["500", "600", "700"] , preload: false });
+const outfit = Outfit({ variable: "--font-outfit", subsets: ["latin"], weight: ["400", "500", "600", "700"] , preload: false });
+const caveat = Caveat({ variable: "--font-caveat", subsets: ["latin"], weight: ["700"] , preload: false });
+const rubik = Rubik({ variable: "--font-rubik", subsets: ["latin"], weight: ["400", "500", "600", "700"] , preload: false });
+const sora = Sora({ variable: "--font-sora", subsets: ["latin"], weight: ["600", "700"] , preload: false });
 
 export const metadata: Metadata = {
   title: { default: "OneTRIP", template: "%s · OneTRIP" },

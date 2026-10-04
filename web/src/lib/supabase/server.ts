@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -16,8 +17,14 @@ export async function supabaseServer() {
   }) as unknown as SupabaseClient;
 }
 
-export async function currentUser() {
+export type SessionUser = { id: string; email: string | null };
+
+/** Who is signed in, from the session JWT verified against the project's public signing key.
+    No network round trip on projects with asymmetric keys (the cloud project); falls back to the Auth server otherwise.
+    Cached per request so layout, page and components share one check. */
+export const currentUser = cache(async (): Promise<SessionUser | null> => {
   const sb = await supabaseServer();
-  const { data } = await sb.auth.getUser();
-  return data.user;
-}
+  const { data, error } = await sb.auth.getClaims();
+  const c = data?.claims; if (error || !c?.sub) return null;
+  return { id: c.sub, email: typeof c.email === "string" ? c.email : null };
+});

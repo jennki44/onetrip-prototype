@@ -14,7 +14,7 @@ export async function proxy(request: NextRequest) {
       },
     },
   });
-  const { data: { user } } = await sb.auth.getUser();
+  const { data } = await sb.auth.getClaims(); const user = data?.claims?.sub ? data.claims : null;
   const path = request.nextUrl.pathname;
   const protectedPath = path.startsWith("/t/") || path.startsWith("/trips") || path.startsWith("/new") || path.startsWith("/account");
   if (protectedPath && !user) {
