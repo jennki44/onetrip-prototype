@@ -24,7 +24,7 @@ export default async function ItemDetail({ params }: { params: Promise<{ tripId:
   const where = pl?.address || i.address || null; const nav = navUrl({ lat: pl?.lat, lng: pl?.lng, address: where, name: pl ? pl.name : null, near: b.trip.destination });
   const album = b.itemPhotos?.[i.id] || []; const coverId = i.photo_url?.startsWith("doc:") ? i.photo_url.slice(4) : null;
   const canEdit = ["owner", "admin", "traveller"].includes(b.members.find(m => m.user_id === user?.id)?.role || "");
-  const docs = b.documents.filter(d => (d.linked_type === "booking" && d.linked_id === i.booking_id) || (d.linked_type === "item" && d.linked_id === i.id));
+  const docs = b.documents.filter(d => (d.linked_type === "booking" && d.linked_id === i.booking_id) || (d.linked_type === "item" && d.linked_id === i.id && d.category !== "Photos"));
   const ph = photoOf(b, i);
   const tone = i.status === "confirmed" ? "good" : i.status === "voting" ? "warn" : i.status === "cancelled" ? "bad" : i.status === "proposed" ? "teal" : undefined;
   return (
