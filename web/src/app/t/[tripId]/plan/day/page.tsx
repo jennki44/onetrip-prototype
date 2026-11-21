@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { loadTrip } from "@/lib/trip/load";
 import { getT } from "@/lib/i18n/server";
-import { dayCount, dayL, dayLabel, itemTitle, itemsOnDay, photoOf } from "@/lib/trip/derive";
+import { dayCount, dayL, dayLabel, itemTitle, itemsOnDay, photoRefOf, resolvePhoto } from "@/lib/trip/derive";
 import { PhotoField } from "@/components/PhotoField";
 import { saveDay } from "./actions";
 
@@ -12,14 +12,14 @@ export default async function EditDay({ params, searchParams }: { params: Promis
   const [{ tripId }, sp] = await Promise.all([params, searchParams]); const [b, { t, locale }] = await Promise.all([loadTrip(tripId), getT()]); if (!b) notFound();
   const total = dayCount(b.trip); const day = Math.min(total, Math.max(1, Number(sp.day) || 1)); const base = `/t/${tripId}`;
   const raw = b.days.find(d => d.day === day); const info = dayL(raw, locale);
-  const options = itemsOnDay(b, day).map(i => ({ url: photoOf(b, i) || "", label: itemTitle(i, locale) })).filter(o => o.url).filter((o, k, a) => a.findIndex(x => x.url === o.url) === k);
+  const options = itemsOnDay(b, day).flatMap(i => { const r = photoRefOf(b, i); return r ? [{ ...r, label: itemTitle(i, locale) }] : []; }).filter((o, k, a) => a.findIndex(x => x.value === o.value) === k);
   return (
     <div className="mx-auto max-w-[560px]">
       <Link href={`${base}/plan?day=${day}`} className="btn btn-sm mb-3">‹ {t("common.back")}</Link>
       <h1 className="text-[1.75rem]">{t("dayEdit.title")}</h1><p className="mb-4 text-ink-2">{t("ui.dayN", { n: day })} · {dayLabel(b.trip, day, locale, true)}</p>
       <form action={saveDay} className="flex flex-col gap-4">
         <input type="hidden" name="tripId" value={tripId} /><input type="hidden" name="day" value={day} />
-        <div><div className="eyebrow mb-1.5">{t("dayEdit.photo")}</div><PhotoField name="banner_url" tripId={tripId} initial={raw?.banner_url || null} options={options} /></div>
+        <div><div className="eyebrow mb-1.5">{t("dayEdit.photo")}</div><PhotoField name="banner_url" tripId={tripId} initial={raw?.banner_url || null} initialUrl={resolvePhoto(b, raw?.banner_url)} options={options} /></div>
         <Field label={t("dayEdit.theme")} hint={t("dayEdit.themeHint")}><input name="theme" maxLength={80} defaultValue={info?.theme || ""} className="input" /></Field>
         <div className="grid grid-cols-2 gap-2">
           <Field label={t("dayEdit.stay")}><input name="stay" maxLength={80} defaultValue={info?.stay || ""} className="input" /></Field>
@@ -27,7 +27,7 @@ export default async function EditDay({ params, searchParams }: { params: Promis
         </div>
         <Field label={t("dayEdit.rule")} hint={t("dayEdit.ruleHint")}><input name="rule" maxLength={200} defaultValue={info?.rule || ""} className="input" /></Field>
         <Field label={t("dayEdit.caption")}><textarea name="caption" maxLength={300} defaultValue={raw?.caption || ""} className="input min-h-20" /></Field>
-        {sp.error && <p className="rounded-2xl bg-bad-soft p-3 font-bold text-bad" role="alert">{sp.error === "photo" ? t("dayEdit.badPhoto") : sp.error}</p>}
+        {sp.error && <p className="rounded-2xl bg-bad-soft p-3 font-bold text-bad" role="alert">{sp.error === "photo" ? t("dayEdit.badPhoto") : sp.error === "invalid" ? t("dayEdit.invalid") : sp.error}</p>}
         <button className="btn btn-sun w-full py-4 text-[1rem]">{t("dayEdit.save")}</button>
       </form>
     </div>

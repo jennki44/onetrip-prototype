@@ -75,6 +75,18 @@ export const photoOf = (b: TripBundle, i: ItineraryItem) => {
   else if (i.photo_url) return i.photo_url;
   return album[0]?.url || place(b, i.place_id)?.photo_url || null;
 };
+/** What to store when a day banner reuses an activity photo: "doc:<id>" for private album photos (their links expire), else the plain URL. */
+export const photoRefOf = (b: TripBundle, i: ItineraryItem) => {
+  const url = photoOf(b, i); if (!url) return null;
+  const doc = (b.itemPhotos?.[i.id] || []).find(x => x.url === url);
+  return { value: doc ? `doc:${doc.id}` : url, url };
+};
+/** Turn a stored photo value into something an <img> can show: "doc:<id>" becomes a fresh signed link, anything else is used as is. */
+export const resolvePhoto = (b: TripBundle, v: string | null | undefined) => {
+  if (!v) return null; if (!v.startsWith("doc:")) return v;
+  const id = v.slice(4); for (const list of Object.values(b.itemPhotos || {})) { const p = list.find(x => x.id === id); if (p) return p.url; }
+  return null;
+};
 
 /* ---- money ---- */
 export const spentBase = (b: TripBundle) => b.expenses.reduce((a, e) => a + e.base_minor, 0);
