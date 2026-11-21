@@ -25,23 +25,27 @@ export function PhotoChooser({ tripId, photo, onClose, onNewActivity, onSaved }:
   const [preview, setPreview] = useState<string | null>(null); const [targets, setTargets] = useState<PhotoTargets | null>(null);
   const [day, setDay] = useState<number | null>(null); const [pick, setPick] = useState(false); const [busy, setBusy] = useState(false); const [err, setErr] = useState<string | null>(null);
   const geo = useRef<{ lat: number; lng: number } | null>(null); const shot = useRef(new Date());
+  const [loadErr, setLoadErr] = useState(false); const dayTouched = useRef(false); const reqId = useRef(0);
 
+  // Ask for the activity list; a newer request always wins over an older one.
+  const fetchTargets = async (d?: number) => {
+    const id = ++reqId.current; setLoadErr(false);
+    const r = await photoTargets({ tripId, today: isoDate(shot.current), now: hhmmNow(shot.current), lat: geo.current?.lat ?? null, lng: geo.current?.lng ?? null, day: d ?? null }).catch(() => null);
+    if (id !== reqId.current) return;
+    if (!r) { setLoadErr(true); return; }
+    setTargets(r); setDay(r.day);
+  };
+
+  // Show the choices at once: load the list without location, then refine the "happening now" suggestion when GPS arrives.
   useEffect(() => {
     const url = URL.createObjectURL(photo); shot.current = new Date(); let live = true;
-    queueMicrotask(() => setPreview(url));
-    (async () => {
-      geo.current = await locate(); if (!live) return;
-      const r = await photoTargets({ tripId, today: isoDate(shot.current), now: hhmmNow(shot.current), lat: geo.current?.lat ?? null, lng: geo.current?.lng ?? null }).catch(() => null);
-      if (!live || !r) return; setTargets(r); setDay(r.day); if (!r.suggested) setPick(false);
-    })();
+    queueMicrotask(() => { setPreview(url); fetchTargets(); });
+    locate().then(pos => { if (!live || !pos) return; geo.current = pos; if (!dayTouched.current) fetchTargets(); });
     return () => { live = false; URL.revokeObjectURL(url); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [photo, tripId]);
 
-  const changeDay = async (d: number) => {
-    setDay(d); setPick(true);
-    const r = await photoTargets({ tripId, today: isoDate(shot.current), now: hhmmNow(shot.current), lat: geo.current?.lat ?? null, lng: geo.current?.lng ?? null, day: d }).catch(() => null);
-    if (r) setTargets(r);
-  };
+  const changeDay = (d: number) => { dayTouched.current = true; setDay(d); setPick(true); fetchTargets(d); };
 
   const save = async (target: "item" | "trip", itemId: string | null, label: string) => {
     if (!day) return; setErr(null); setBusy(true);
@@ -62,7 +66,8 @@ export function PhotoChooser({ tripId, photo, onClose, onNewActivity, onSaved }:
       <div className="mx-auto flex min-h-full w-full max-w-[560px] flex-col gap-3 px-4 pb-10 pt-4">
         <div className="flex items-center justify-between"><button type="button" onClick={onClose} className="btn btn-sm">{t("snap.cancel")}</button><h2 className="text-[1.25rem]">{t("photo.useFor")}</h2><span className="w-16" /></div>
         {preview && <img src={preview} alt="" className="max-h-[32vh] w-full rounded-[22px] bg-surface-2 object-cover" />}
-        {!targets && <div className="card flex items-center gap-3 p-4" role="status"><span className="h-5 w-5 animate-spin rounded-full border-[3px] border-teal border-b-transparent" />{t("photo.finding")}</div>}
+        {!targets && !loadErr && <div className="card flex items-center gap-3 p-4" role="status"><span className="h-5 w-5 animate-spin rounded-full border-[3px] border-teal border-b-transparent" />{t("photo.finding")}</div>}
+        {!targets && loadErr && <div className="card flex items-center justify-between gap-2 p-4"><span className="text-ink-2">{t("photo.loadFailed")}</span><button type="button" onClick={() => fetchTargets()} className="btn btn-sm">{t("ai.again")}</button></div>}
 
         {targets && (<>
           {suggested && !pick && <Option disabled={busy} primary icon="📍" title={t("photo.toActivity", { name: suggested.title })} sub={`${fmtTime(suggested.start, locale)} · ${t("photo.free")}`} onClick={() => save("item", suggested.id, suggested.title)} />}
@@ -74,10 +79,10 @@ export function PhotoChooser({ tripId, photo, onClose, onNewActivity, onSaved }:
               )) : <p className="text-[0.875rem] text-ink-2">{t("photo.noActivities")}</p>}
             </div>
           ) : <button type="button" onClick={() => setPick(true)} className="-mt-1 self-start text-[0.875rem] font-bold text-ink-2 underline underline-offset-4">{t("photo.otherActivity")}</button>}
-          <Option disabled={busy} icon="✨" title={t("photo.newActivity")} sub={t("photo.newActivitySub")} onClick={() => { onClose(); onNewActivity(photo); }} />
-          <Option disabled={busy} icon="🖼️" title={t("photo.tripAlbum")} sub={`${dayLabelOf(day)} · ${t("photo.free")}`} onClick={() => save("trip", null, t("photo.tripAlbumShort"))} />
-          <Option disabled={busy} icon="🧾" title={t("photo.receipt")} sub={t("photo.receiptSub")} onClick={() => { setPendingPhoto(photo); onClose(); router.push(`/t/${tripId}/money/scan`); }} />
         </>)}
+          <Option disabled={busy} icon="✨" title={t("photo.newActivity")} sub={t("photo.newActivitySub")} onClick={() => { onClose(); onNewActivity(photo); }} />
+          <Option disabled={busy || !targets} icon="🖼️" title={t("photo.tripAlbum")} sub={targets ? `${dayLabelOf(day)} · ${t("photo.free")}` : t("photo.finding")} onClick={() => save("trip", null, t("photo.tripAlbumShort"))} />
+          <Option disabled={busy} icon="🧾" title={t("photo.receipt")} sub={t("photo.receiptSub")} onClick={() => { setPendingPhoto(photo); onClose(); router.push(`/t/${tripId}/money/scan`); }} />
         {busy && <p className="text-center font-bold text-ink-2" role="status">{t("ui.uploading")}</p>}
         {err && <p role="alert" className="rounded-2xl bg-bad-soft p-3 font-bold text-bad">{err}</p>}
       </div>

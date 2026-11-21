@@ -26,8 +26,19 @@ export async function toJpeg(f: File, max: number): Promise<Blob | null> {
   } catch { return null; }
 }
 const b64 = (b: Blob) => new Promise<string>((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(",")[1] || ""); r.onerror = rej; r.readAsDataURL(b); });
-export function locate(): Promise<{ lat: number; lng: number } | null> {
-  return new Promise(res => { if (!("geolocation" in navigator)) return res(null); navigator.geolocation.getCurrentPosition(p => res({ lat: p.coords.latitude, lng: p.coords.longitude }), () => res(null), { enableHighAccuracy: true, timeout: 9000, maximumAge: 60000 }); });
+/**
+ * The phone's position, or null. Always settles within limitMs: the browser's own timeout only starts after the
+ * "Allow location?" prompt is answered, and some browsers never answer at all.
+ */
+export function locate(limitMs = 6000): Promise<{ lat: number; lng: number } | null> {
+  return new Promise(res => {
+    let done = false; const finish = (v: { lat: number; lng: number } | null) => { if (!done) { done = true; res(v); } };
+    setTimeout(() => finish(null), limitMs);
+    try {
+      if (!("geolocation" in navigator)) return finish(null);
+      navigator.geolocation.getCurrentPosition(p => finish({ lat: p.coords.latitude, lng: p.coords.longitude }), () => finish(null), { enableHighAccuracy: true, timeout: limitMs, maximumAge: 120000 });
+    } catch { finish(null); }
+  });
 }
 export const hhmmNow = (d: Date) => `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 
