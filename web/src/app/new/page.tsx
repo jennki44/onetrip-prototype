@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { getT } from "@/lib/i18n/server";
 import { createTrip } from "./actions";
@@ -11,6 +12,8 @@ export default async function NewTrip({ searchParams }: { searchParams: Promise<
     <div className="mx-auto w-full max-w-[520px] px-5 pt-8">
       <div className="mb-4"><Logo size={36} /></div>
       <h1 className="text-[1.75rem]">{t("create.where")}</h1><p className="mb-4 text-ink-2">{t("create.basics")}</p>
+      <Link href="/new/ai" className="card mb-5 flex items-center gap-3 border-2 border-teal p-4"><span className="text-[2rem]">✨</span><span className="flex-1"><b className="block text-[1.0625rem]">{t("ai.planTitle")}</b><span className="text-[0.875rem] text-ink-2">{t("ai.planCta")}</span></span><span className="text-[1.25rem] text-teal">›</span></Link>
+      <div className="eyebrow mb-2">{t("ai.orManual")}</div>
       <form action={createTrip} className="flex flex-col gap-4">
         <label className="flex flex-col gap-1.5 text-[0.7813rem] font-extrabold text-ink-2">{t("create.destination")}<input name="destination" required maxLength={80} className="input" placeholder="e.g. Sydney, Australia" /></label>
         <label className="flex flex-col gap-1.5 text-[0.7813rem] font-extrabold text-ink-2">{t("ui.tripName")}<input name="name" required maxLength={80} className="input" placeholder="e.g. Sydney Family Trip" /></label>

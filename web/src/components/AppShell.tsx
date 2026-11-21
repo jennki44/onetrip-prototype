@@ -1,9 +1,13 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useT } from "@/lib/i18n/provider";
 import { SnapAdd, SNAP_INPUT } from "./SnapAdd";
+import { AiQuickAdd } from "./AiQuickAdd";
+
+/** Any button can open the ✨ quick add sheet by dispatching this event. */
+export const AI_QUICK_EVENT = "onetrip:ai-quick";
 
 /* Line icons (24px grid), one colour per tab. Emoji stay for content, not for navigation. */
 const ICONS: Record<string, React.ReactNode> = {
@@ -25,13 +29,15 @@ const ADD = [
   ["📄", "document", "/inbox"], ["🗳", "decision", "/decisions/new"], ["📝", "note", "/notes/new"], ["🎤", "voice", "/money/new?voice=1"], ] as const;
 
 export function AppShell({ tripId, children }: { tripId: string; children: React.ReactNode }) {
-  const path = usePathname(); const { t } = useT(); const [add, setAdd] = useState(false);
+  const path = usePathname(); const { t } = useT(); const [add, setAdd] = useState(false); const [ai, setAi] = useState(false);
+  useEffect(() => { const open = () => setAi(true); window.addEventListener(AI_QUICK_EVENT, open); return () => window.removeEventListener(AI_QUICK_EVENT, open); }, []);
   const base = `/t/${tripId}`;
   const active = (p: string) => (p === "" ? path === base || path.startsWith(`${base}/today`) || path.startsWith(`${base}/travel`) : path.startsWith(base + p));
   return (
     <div className="relative mx-auto flex min-h-dvh w-full max-w-[640px] flex-col md:max-w-[1120px]">
       <main className="flex-1 px-4 pb-32 pt-4 md:px-9 md:pt-7">{children}</main>
       <SnapAdd tripId={tripId} inputId={SNAP_INPUT} />
+      <AiQuickAdd tripId={tripId} open={ai} onClose={() => setAi(false)} />
       <button aria-label={t("nav.add")} onClick={() => setAdd(true)} className="fixed right-4 z-30 flex h-[3.6rem] w-[3.6rem] items-center justify-center rounded-full bg-coral text-[1.9rem] font-light text-white shadow-[0_8px_22px_rgba(255,107,74,.45)] md:right-8" style={{ bottom: "calc(5.4rem + env(safe-area-inset-bottom))" }}>+</button>
       <nav aria-label="Main" className="fixed bottom-0 left-0 right-0 z-20 grid grid-cols-5 items-stretch border-t-2 border-line bg-surface px-1 pt-1.5" style={{ paddingBottom: "calc(0.4rem + env(safe-area-inset-bottom))" }}>
         {TABS.map(tab => { const on = active(tab.path); return (
@@ -44,6 +50,7 @@ export function AppShell({ tripId, children }: { tripId: string; children: React
           <div className="w-full max-w-[640px] rounded-t-[28px] bg-surface px-5 pb-8 pt-3" onClick={e => e.stopPropagation()}>
             <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-line" />
             <h2 className="text-[1.25rem]">{t("nav.add")}</h2>
+            <button type="button" onClick={() => { setAdd(false); setAi(true); }} className="mt-4 flex w-full items-center gap-3 rounded-2xl bg-sun-soft px-4 py-3.5 text-left font-extrabold text-ink"><span className="text-[1.6rem]">✨</span><span><span className="block">{t("ai.quickTitle")}</span><span className="block text-[0.8125rem] font-semibold text-ink-2">{t("ai.quickSub")}</span></span></button>
             <div className="mt-4 grid grid-cols-5 gap-2">
               {ADD.map(([e, l, p]) => <Link key={l} href={base + p} onClick={() => setAdd(false)} className="flex flex-col items-center gap-1.5 rounded-2xl bg-surface-2 px-1 py-3 text-[0.75rem] font-extrabold text-ink-2"><span className="text-[1.5rem]">{e}</span>{t(`ui.add.${l}`)}</Link>)}
               <label htmlFor={SNAP_INPUT} onClick={() => setAdd(false)} className="flex cursor-pointer flex-col items-center gap-1.5 rounded-2xl bg-surface-2 px-1 py-3 text-[0.75rem] font-extrabold text-ink-2"><span className="text-[1.5rem]">📷</span>{t("ui.add.photo")}</label>
