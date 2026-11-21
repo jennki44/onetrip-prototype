@@ -38,7 +38,7 @@ const en = {
     i: { shopping: "Shopping", food: "Food", coffee: "Coffee", sightseeing: "Sights", nature: "Nature", kids: "Kids", culture: "Culture", nightlife: "Nightlife" },
     pace: "Pace", paceN: { relaxed: "≈ 3 a day", balanced: "4–5 a day", busy: "≈ 6 a day" },
     areas: "Preferred areas", areasPh: "e.g. Shinjuku, Shibuya", hotel: "Where you're staying (optional)", hotelPh: "e.g. Hotel Gracery Shinjuku", wishes: "Anything else?", wishesPh: "e.g. no early mornings, grandma walks slowly",
-    planning: "Planning your trip…", tip1: "Picking real places near each other", tip2: "Fitting meals at sensible times", tip3: "This can take up to a minute", planIt: "Plan my trip",
+    planning: "Planning your trip…", planningFor: "Planning your {place} trip", secondsLeft: "about {n} seconds", almost: "almost done", stepPrefs: "Understanding what you like", stepAreas: "Choosing areas", stepAreasN: "Choosing areas: {areas}", stepDays: "Planning sights and meals day by day", stepMap: "Checking addresses on the map", watchHint: "Keep watching — finished days appear straight away", dayFailed: "This day didn't come through.", creatingMap: "Creating… checking {n} more addresses", tip1: "Picking real places near each other", tip2: "Fitting meals at sensible times", tip3: "This can take up to a minute", planIt: "Plan my trip",
     draftHint: "Here's a draft. ✓ keep, ✕ remove, ⟳ swap for something else. Places get checked on the map.", swapping: "Finding another…", checking: "Checking the map…", remove: "Remove", keep: "Keep", swap: "Swap", summary: "{n} places kept", create: "Create trip", startOver: "Change my answers" },
   home: {
     next: "Next", today: "Today", fullDay: "Full day", decision: "Group decision", allDecisions: "All decisions", money: "Money", details: "Details",
@@ -144,7 +144,7 @@ const zhHant: Dictionary = {
     i: { shopping: "購物", food: "美食", coffee: "咖啡", sightseeing: "景點", nature: "大自然", kids: "親子", culture: "文化", nightlife: "夜生活" },
     pace: "節奏", paceN: { relaxed: "每日約 3 個", balanced: "每日 4–5 個", busy: "每日約 6 個" },
     areas: "想去嘅地區", areasPh: "例如：新宿、澀谷", hotel: "住邊度（可以唔填）", hotelPh: "例如：新宿格拉斯麗酒店", wishes: "仲有咩要求？", wishesPh: "例如：唔好太早起身、嫲嫲行得慢",
-    planning: "幫你諗緊行程…", tip1: "揀緊附近嘅真實地方", tip2: "安排啱時間食飯", tip3: "可能要等一分鐘", planIt: "幫我諗行程",
+    planning: "幫你諗緊行程…", planningFor: "幫你諗緊{place}行程", secondsLeft: "大約 {n} 秒", almost: "就快好", stepPrefs: "了解你嘅喜好", stepAreas: "揀地區", stepAreasN: "揀地區：{areas}", stepDays: "逐日安排景點同食飯", stepMap: "喺地圖核對地址", watchHint: "可以一路睇，已經整好嘅日子會即刻出現", dayFailed: "呢日未整到。", creatingMap: "建立緊…仲要核對 {n} 個地址", tip1: "揀緊附近嘅真實地方", tip2: "安排啱時間食飯", tip3: "可能要等一分鐘", planIt: "幫我諗行程",
     draftHint: "呢份係草稿。✓ 保留、✕ 刪除、⟳ 換第二個。地點會喺地圖上核對。", swapping: "搵緊第二個…", checking: "喺地圖上核對緊…", remove: "刪除", keep: "保留", swap: "換", summary: "保留咗 {n} 個地方", create: "建立行程", startOver: "改返答案" },
   home: {
     next: "下一站", today: "今日", fullDay: "全日行程", decision: "小組決定", allDecisions: "全部決定", money: "錢", details: "詳情",

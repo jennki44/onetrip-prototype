@@ -9,7 +9,7 @@ export const AI_MODEL = process.env.ONETRIP_AI_MODEL || "claude-opus-5-5";
 export type AiResult<T> = { ok: true; data: T } | { ok: false; error: "not_configured" | "limit" | "refused" | "busy" | "failed" };
 
 /** Count one AI use against today's limit (ai_take in the database). Nothing is counted while AI is switched off. */
-export async function takeAi(sb: SupabaseClient, kind: "plan" | "swap" | "quick", tripId?: string) {
+export async function takeAi(sb: SupabaseClient, kind: "plan" | "day" | "swap" | "quick", tripId?: string) {
   if (!process.env.ANTHROPIC_API_KEY) return true;
   const { data, error } = await sb.rpc("ai_take", { p_kind: kind, p_trip: tripId ?? null });
   return !error && data === true;
