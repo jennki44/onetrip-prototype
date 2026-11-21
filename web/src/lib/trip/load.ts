@@ -16,7 +16,8 @@ export const loadTrip = cache(async (tripId: string): Promise<TripBundle | null>
   const documentsP = q<TripBundle["documents"][number]>("documents", "created_at");
   // Activity photos live in the private documents bucket; one batched call turns them into links that last an hour.
   const photosP = documentsP.then(async d => {
-    const photoDocs = (d.data || []).filter(x => x.linked_type === "item" && x.linked_id && x.storage_path && x.category === "Photos").sort((x, y) => x.created_at.localeCompare(y.created_at)).slice(0, 400);
+    // Activity photos (linked to an item) and trip-album photos (linked to the trip, stored under <trip>/days/<day>/).
+    const photoDocs = (d.data || []).filter(x => (x.linked_type === "item" || x.linked_type === "trip") && x.linked_id && x.storage_path && x.category === "Photos").sort((x, y) => x.created_at.localeCompare(y.created_at)).slice(0, 600);
     const signed = photoDocs.length ? (await sb.storage.from("documents").createSignedUrls(photoDocs.map(x => x.storage_path as string), 3600)).data || [] : [];
     return { photoDocs, signed };
   });
@@ -31,12 +32,17 @@ export const loadTrip = cache(async (tripId: string): Promise<TripBundle | null>
   setRates(await ratesP);
   if (!trip.data) return null;
   const itemPhotos: Record<string, ItemPhoto[]> = {};
-  photoDocs.forEach((d, k) => { const url = signed[k]?.signedUrl; if (url) (itemPhotos[d.linked_id as string] ||= []).push({ id: d.id, url, name: d.name, added_by: d.added_by, created_at: d.created_at }); });
+  const tripPhotos: (ItemPhoto & { day: number })[] = [];
+  photoDocs.forEach((d, k) => {
+    const url = signed[k]?.signedUrl; if (!url) return; const ph = { id: d.id, url, name: d.name, added_by: d.added_by, created_at: d.created_at };
+    if (d.linked_type === "trip") tripPhotos.push({ ...ph, day: Number(/\/days\/(\d+)\//.exec(d.storage_path || "")?.[1]) || 0 });
+    else (itemPhotos[d.linked_id as string] ||= []).push(ph);
+  });
   const pmap = new Map((profiles || []).map(p => [p.id, p]));
   return {
     trip: trip.data, days: days.data || [], members: (members.data || []).map(m => ({ ...m, profile: pmap.get(m.user_id) || { id: m.user_id, name: "Traveller", initials: "?", color: "#8A949C", locale: "en", reporting_currency: null, created_at: "" } })),
     places: places.data || [], items: items.data || [], bookings: bookings.data || [], decisions: decisions.data || [], options: options.data || [], votes: votes.data || [],
-    expenses: expenses.data || [], shares: shares.data || [], settlements: settlements.data || [], notifications: (notifications.data || []).reverse(), activity: (activity.data || []).reverse(), notes: notes.data || [], documents: (documents.data || []).reverse(), itemPhotos,
+    expenses: expenses.data || [], shares: shares.data || [], settlements: settlements.data || [], notifications: (notifications.data || []).reverse(), activity: (activity.data || []).reverse(), notes: notes.data || [], documents: (documents.data || []).reverse(), itemPhotos, tripPhotos,
   };
 });
 

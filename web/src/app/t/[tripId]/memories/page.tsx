@@ -12,7 +12,10 @@ export default async function Memories({ params }: { params: Promise<{ tripId: s
   const rc = b.members.find(m => m.user_id === user?.id)?.profile.reporting_currency || b.trip.home_currency; const day = nowSlots(b, demoNow(b.trip)).day;
   const places = new Set(b.items.filter(i => i.place_id).map(i => i.place_id)).size; const meals = b.items.filter(i => i.category === "food").length; const drive = b.items.reduce((a, i) => a + (i.travel_min || 0), 0);
   const big = [...b.expenses].sort((x, y) => y.base_minor - x.base_minor)[0]; const best = [...b.places].filter(p => p.rating).sort((x, y) => (y.rating || 0) - (x.rating || 0))[0];
-  const albumDays = [...new Set(b.items.filter(i => b.itemPhotos?.[i.id]?.length).map(i => i.day))].sort((x, y) => x - y); const albumCount = Object.values(b.itemPhotos || {}).reduce((a, v) => a + v.length, 0);
+  // Album = activity photos plus trip-album photos (saved with no activity) for each day.
+  const tripPhotos = b.tripPhotos || []; const albumDays = [...new Set([...b.items.filter(i => b.itemPhotos?.[i.id]?.length).map(i => i.day), ...tripPhotos.filter(p => p.day > 0).map(p => p.day)])].sort((x, y) => x - y);
+  const albumCount = Object.values(b.itemPhotos || {}).reduce((a, v) => a + v.length, 0) + tripPhotos.length; const otherPhotos = tripPhotos.filter(p => p.day <= 0);
+  const grid = (list: { id: string; url: string; name: string }[]) => <div className="grid grid-cols-3 gap-2">{list.map(ph => <a key={ph.id} href={ph.url} target="_blank" rel="noopener noreferrer" className="block overflow-hidden rounded-xl"><img src={ph.url} alt={ph.name} loading="lazy" className="aspect-square w-full object-cover" /></a>)}</div>;
   const shots = b.items.filter(i => photoOf(b, i)).filter((_, k) => k % 8 === 0).slice(0, 6);
   return (
     <div className="mx-auto max-w-[640px]">
@@ -22,8 +25,10 @@ export default async function Memories({ params }: { params: Promise<{ tripId: s
       <section className="mt-5"><div className="eyebrow mb-2">{t("ui.album")}{albumCount ? ` · ${albumCount}` : ""}</div>
         {albumDays.length ? albumDays.map(d => <div key={d} className="mb-4"><div className="mb-2 font-display text-[1.05rem] font-bold">{dayLabel(b.trip, d, locale, true)}</div>
           {b.items.filter(i => i.day === d && b.itemPhotos?.[i.id]?.length).sort((x, y) => x.start_time.localeCompare(y.start_time)).map(i => <div key={i.id} className="mb-3"><Link href={`/t/${tripId}/plan/${i.id}`} className="mb-1.5 flex items-center justify-between text-[0.9rem] font-bold"><span>{i.emoji} {itemTitle(i, locale)}</span><span className="text-ink-3">›</span></Link>
-            <div className="grid grid-cols-3 gap-2">{(b.itemPhotos?.[i.id] || []).map(ph => <a key={ph.id} href={ph.url} target="_blank" rel="noopener noreferrer" className="block overflow-hidden rounded-xl"><img src={ph.url} alt={ph.name} loading="lazy" className="aspect-square w-full object-cover" /></a>)}</div></div>)}
-        </div>) : <div className="card text-ink-2">{t("ui.albumEmpty")}</div>}
+            {grid(b.itemPhotos?.[i.id] || [])}</div>)}
+          {tripPhotos.some(p => p.day === d) && <div className="mb-3"><div className="mb-1.5 text-[0.9rem] font-bold">🖼️ {t("photo.everyday")}</div>{grid(tripPhotos.filter(p => p.day === d))}</div>}
+        </div>) : !otherPhotos.length && <div className="card text-ink-2">{t("ui.albumEmpty")}</div>}
+        {otherPhotos.length > 0 && <div className="mb-4"><div className="mb-2 font-display text-[1.05rem] font-bold">🖼️ {t("photo.otherPhotos")}</div>{grid(otherPhotos)}</div>}
       </section>
       <section className="mt-5"><div className="eyebrow mb-2">{t("ui.photos")}</div><div className="grid grid-cols-3 gap-2">{shots.map(i => <div key={i.id} className="relative aspect-square overflow-hidden rounded-xl"><img src={photoOf(b, i)!} alt="" className="h-full w-full object-cover" /><span className="absolute bottom-1.5 left-1.5 rounded-md bg-black/55 px-1.5 py-0.5 text-[0.6875rem] font-bold text-white">{itemTitle(i, locale)}</span></div>)}</div></section>
       <button className="btn btn-sun mt-6 w-full py-4 text-[1rem]" disabled>{t("ui.storyLater")}</button>

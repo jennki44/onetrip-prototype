@@ -8,6 +8,8 @@ import { aiQuickRead, aiQuickSave, type QuickDraft } from "@/app/t/[tripId]/plan
 
 /** The one camera input on trip screens: any <label htmlFor={SNAP_INPUT}> opens the camera, and the photo lands in the ✨ add screen. */
 export const SNAP_INPUT = "snap-photo";
+/** The ✨ add screen's own camera input, for "a photo of this new activity". */
+export const AI_PHOTO_INPUT = "ai-photo";
 export const PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
 
 // The browser's built-in speech-to-text (Chrome/Android, recent iPhones). Typed loosely: it is not in the standard DOM types.
@@ -15,7 +17,7 @@ type Recog = { lang: string; interimResults: boolean; continuous: boolean; start
 const getRecog = (): (new () => Recog) | null => { const w = globalThis as unknown as { SpeechRecognition?: new () => Recog; webkitSpeechRecognition?: new () => Recog }; return w.SpeechRecognition || w.webkitSpeechRecognition || null; };
 
 /** Resize to a JPEG: max 1024px for the AI to read, max 1600px for the trip album. Null if the browser can't decode it (e.g. HEIC on some phones). */
-async function toJpeg(f: File, max: number): Promise<Blob | null> {
+export async function toJpeg(f: File, max: number): Promise<Blob | null> {
   try {
     const bmp = await createImageBitmap(f); const s = Math.min(1, max / Math.max(bmp.width, bmp.height));
     const c = document.createElement("canvas"); c.width = Math.round(bmp.width * s); c.height = Math.round(bmp.height * s);
@@ -24,10 +26,10 @@ async function toJpeg(f: File, max: number): Promise<Blob | null> {
   } catch { return null; }
 }
 const b64 = (b: Blob) => new Promise<string>((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(",")[1] || ""); r.onerror = rej; r.readAsDataURL(b); });
-function locate(): Promise<{ lat: number; lng: number } | null> {
+export function locate(): Promise<{ lat: number; lng: number } | null> {
   return new Promise(res => { if (!("geolocation" in navigator)) return res(null); navigator.geolocation.getCurrentPosition(p => res({ lat: p.coords.latitude, lng: p.coords.longitude }), () => res(null), { enableHighAccuracy: true, timeout: 9000, maximumAge: 60000 }); });
 }
-const hhmmNow = (d: Date) => `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+export const hhmmNow = (d: Date) => `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) { return <label className="flex flex-col gap-1.5 text-[0.8125rem] font-extrabold text-ink-2">{label}{children}</label>; }
 
@@ -35,7 +37,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
  * ✨ One add screen for during the trip: an optional photo plus optional spoken or typed words.
  * Claude reads them with the phone's location and time and fills in one card to check and save.
  */
-export function AiAdd({ tripId, open, photo, onClose }: { tripId: string; open: boolean; photo: File | null; onClose: () => void }) {
+export function AiAdd({ tripId, open, photo, onClose, onPhoto }: { tripId: string; open: boolean; photo: File | null; onClose: () => void; onPhoto: (f: File) => void }) {
   const { t, locale } = useT(); const router = useRouter(); const zh = locale.startsWith("zh");
   const [text, setText] = useState(""); const [busy, setBusy] = useState<"" | "locating" | "reading" | "saving">(""); const [err, setErr] = useState<string | null>(null);
   const [draft, setDraft] = useState<QuickDraft | null>(null); const [orig, setOrig] = useState<QuickDraft | null>(null);
@@ -104,7 +106,8 @@ export function AiAdd({ tripId, open, photo, onClose }: { tripId: string; open: 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-ground" role="dialog" aria-modal="true" aria-label={t("ai.addTitle")}>
       <div className="mx-auto flex min-h-full w-full max-w-[560px] flex-col gap-4 px-4 pb-10 pt-4">
-        <div className="flex items-center justify-between"><button type="button" onClick={close} className="btn btn-sm">{t("snap.cancel")}</button><h2 className="text-[1.25rem]">✨ {t("ai.addTitle")}</h2><label htmlFor={SNAP_INPUT} className="btn btn-sm cursor-pointer">📷 {preview ? t("snap.retake") : t("ai.addPhoto")}</label></div>
+        <div className="flex items-center justify-between"><button type="button" onClick={close} className="btn btn-sm">{t("snap.cancel")}</button><h2 className="text-[1.25rem]">✨ {t("ai.addTitle")}</h2><label htmlFor={AI_PHOTO_INPUT} className="btn btn-sm cursor-pointer">📷 {preview ? t("snap.retake") : t("ai.addPhoto")}</label></div>
+        <input id={AI_PHOTO_INPUT} type="file" accept="image/*" capture="environment" className="hidden" onChange={e => { const f = e.target.files?.[0] || null; e.target.value = ""; if (f && PHOTO_TYPES.includes(f.type) && f.size <= 15 * 1024 * 1024) onPhoto(f); }} />
 
         {preview && <img src={preview} alt="" className="max-h-[34vh] w-full rounded-[22px] bg-surface-2 object-cover" />}
 

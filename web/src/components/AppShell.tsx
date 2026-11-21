@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useT } from "@/lib/i18n/provider";
 import { AiAdd, PHOTO_TYPES, SNAP_INPUT } from "./AiAdd";
+import { PhotoChooser } from "./PhotoChooser";
 
 /** Any button can open the ✨ quick add sheet by dispatching this event. */
 export const AI_QUICK_EVENT = "onetrip:ai-quick";
@@ -28,17 +29,20 @@ const ADD = [
   ["📄", "document", "/inbox"], ["🗳", "decision", "/decisions/new"], ["📝", "note", "/notes/new"], ["🎤", "voice", "/money/new?voice=1"], ] as const;
 
 export function AppShell({ tripId, children }: { tripId: string; children: React.ReactNode }) {
-  const path = usePathname(); const { t } = useT(); const [add, setAdd] = useState(false); const [ai, setAi] = useState(false); const [photo, setPhoto] = useState<File | null>(null); const [photoErr, setPhotoErr] = useState(false);
+  const path = usePathname(); const { t } = useT(); const [add, setAdd] = useState(false); const [ai, setAi] = useState(false); const [photo, setPhoto] = useState<File | null>(null); const [photoErr, setPhotoErr] = useState(false); const [choosing, setChoosing] = useState<File | null>(null); const [toast, setToast] = useState<string | null>(null);
+  useEffect(() => { if (!toast) return; const id = setTimeout(() => setToast(null), 3500); return () => clearTimeout(id); }, [toast]);
   useEffect(() => { const open = () => { setPhoto(null); setAi(true); }; window.addEventListener(AI_QUICK_EVENT, open); return () => window.removeEventListener(AI_QUICK_EVENT, open); }, []);
   const base = `/t/${tripId}`;
   const active = (p: string) => (p === "" ? path === base || path.startsWith(`${base}/today`) || path.startsWith(`${base}/travel`) : path.startsWith(base + p));
   return (
     <div className="relative mx-auto flex min-h-dvh w-full max-w-[640px] flex-col md:max-w-[1120px]">
       <main className="flex-1 px-4 pb-32 pt-4 md:px-9 md:pt-7">{children}</main>
-      {/* The one camera input: any <label htmlFor={SNAP_INPUT}> opens it; the photo goes to the ✨ add screen. */}
-      <input id={SNAP_INPUT} type="file" accept="image/*" capture="environment" className="hidden" onChange={e => { const f = e.target.files?.[0] || null; e.target.value = ""; if (!f) return; if (!PHOTO_TYPES.includes(f.type) || f.size > 15 * 1024 * 1024) { setPhotoErr(true); return; } setPhotoErr(false); setPhoto(f); setAi(true); }} />
+      {/* The one camera input: any <label htmlFor={SNAP_INPUT}> opens it; the photo then goes to "Use this photo for…". */}
+      <input id={SNAP_INPUT} type="file" accept="image/*" capture="environment" className="hidden" onChange={e => { const f = e.target.files?.[0] || null; e.target.value = ""; if (!f) return; if (!PHOTO_TYPES.includes(f.type) || f.size > 15 * 1024 * 1024) { setPhotoErr(true); return; } setPhotoErr(false); setChoosing(f); }} />
       {photoErr && <div role="alert" onClick={() => setPhotoErr(false)} className="fixed inset-x-4 top-4 z-50 rounded-2xl bg-bad-soft p-3 font-bold text-bad">{t("snap.badFile")}</div>}
-      <AiAdd tripId={tripId} open={ai} photo={photo} onClose={() => { setAi(false); setPhoto(null); }} />
+      {choosing && <PhotoChooser tripId={tripId} photo={choosing} onClose={() => setChoosing(null)} onNewActivity={f => { setPhoto(f); setAi(true); }} onSaved={setToast} />}
+      <AiAdd tripId={tripId} open={ai} photo={photo} onPhoto={setPhoto} onClose={() => { setAi(false); setPhoto(null); }} />
+      {toast && <div role="status" className="fixed inset-x-4 top-4 z-[60] mx-auto max-w-[520px] rounded-2xl bg-good-soft p-3 text-center font-bold">✅ {toast}</div>}
       <button aria-label={t("nav.add")} onClick={() => setAdd(true)} className="fixed right-4 z-30 flex h-[3.6rem] w-[3.6rem] items-center justify-center rounded-full bg-coral text-[1.9rem] font-light text-white shadow-[0_8px_22px_rgba(255,107,74,.45)] md:right-8" style={{ bottom: "calc(5.4rem + env(safe-area-inset-bottom))" }}>+</button>
       <nav aria-label="Main" className="fixed bottom-0 left-0 right-0 z-20 grid grid-cols-5 items-stretch border-t-2 border-line bg-surface px-1 pt-1.5" style={{ paddingBottom: "calc(0.4rem + env(safe-area-inset-bottom))" }}>
         {TABS.map(tab => { const on = active(tab.path); return (
@@ -54,7 +58,8 @@ export function AppShell({ tripId, children }: { tripId: string; children: React
             <button type="button" onClick={() => { setAdd(false); setPhoto(null); setAi(true); }} className="mt-4 flex w-full items-center gap-3 rounded-2xl bg-sun-soft px-4 py-3.5 text-left font-extrabold text-ink"><span className="text-[1.6rem]">✨</span><span><span className="block">{t("ai.addTitle")}</span><span className="block text-[0.8125rem] font-semibold text-ink-2">{t("ai.addSub")}</span></span></button>
             <div className="mt-4 grid grid-cols-5 gap-2">
               {ADD.map(([e, l, p]) => <Link key={l} href={base + p} onClick={() => setAdd(false)} className="flex flex-col items-center gap-1.5 rounded-2xl bg-surface-2 px-1 py-3 text-[0.75rem] font-extrabold text-ink-2"><span className="text-[1.5rem]">{e}</span>{t(`ui.add.${l}`)}</Link>)}
-              <label htmlFor={SNAP_INPUT} onClick={() => setAdd(false)} className="flex cursor-pointer flex-col items-center gap-1.5 rounded-2xl bg-surface-2 px-1 py-3 text-[0.75rem] font-extrabold text-ink-2"><span className="text-[1.5rem]">📷</span>{t("ui.add.photo")}</label>
+              {/* Open the camera before closing the menu: a label removed in the same tap never reaches the input. */}
+              <button type="button" onClick={() => { document.getElementById(SNAP_INPUT)?.click(); setAdd(false); }} className="flex flex-col items-center gap-1.5 rounded-2xl bg-surface-2 px-1 py-3 text-[0.75rem] font-extrabold text-ink-2"><span className="text-[1.5rem]">📷</span>{t("ui.add.photo")}</button>
             </div>
           </div>
         </div>

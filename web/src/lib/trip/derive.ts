@@ -10,6 +10,8 @@ export interface TripBundle {
   notifications: Notification[]; activity: ActivityLog[]; notes: Note[]; documents: Document[];
   /** Photos added to activities, oldest first, with short-lived signed links (private storage). */
   itemPhotos?: Record<string, ItemPhoto[]>;
+  /** Photos saved to the trip album only (no activity), by trip day; day 0 = outside the trip dates. */
+  tripPhotos?: (ItemPhoto & { day: number })[];
 }
 export type ItemPhoto = { id: string; url: string; name: string; added_by: string | null; created_at: string };
 

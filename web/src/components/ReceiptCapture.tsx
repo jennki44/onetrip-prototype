@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { takePendingPhoto } from "@/lib/pendingPhoto";
 import { useT } from "@/lib/i18n/provider";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { ExpenseForm } from "./ExpenseForm";
@@ -34,6 +35,9 @@ export function ReceiptCapture(props: Props) {
     const note = res.ok ? (res.body.confidence === "low" ? t("receipt.readLow") : t("receipt.readDone")) : res.body.error === "not_configured" ? t("receipt.notConfigured") : res.status === 415 ? t("receipt.heicNote") : t("receipt.failed");
     setScan(s => ({ key: s.key + 1, path, read: res.ok ? res.body : null, note })); setBusy(false);
   };
+  // Arrived from 📷 → "it's a receipt": read that photo straight away.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { const f = takePendingPhoto(); if (f) queueMicrotask(() => onFile(f)); }, []);
   const r = scan.read; const manyPeople = props.members.length > 1; const everyone = props.members.map(m => m.id);
   const initial = { receiptImagePath: scan.path || undefined, merchant: r?.merchant || undefined, amount: r?.total != null ? String(r.total) : undefined, date: r?.date || undefined, currency: r?.currency || undefined, category: r?.category && props.categories.includes(r.category) ? r.category : undefined };
   const initialItems = manyPeople && r && r.items.length > 1 ? r.items.map(it => ({ name: it.name, amount: String(it.amount), userIds: everyone })) : undefined;
