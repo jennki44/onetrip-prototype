@@ -6,6 +6,7 @@ import { currentUser } from "@/lib/supabase/server";
 import { budgetBase, dateRange, dayCount, dayL, dayLabel, decQuestion, decTitle, fmtTime, forecastBase, healthChecks, inCurrency, itemTitle, leadingOption, nowSlots, optionLabel, photoOf, place, placeName, spentBase, votersOf } from "@/lib/trip/derive";
 import { Avatars, Bar, Eyebrow, Pill } from "@/components/ui";
 import { demoNow } from "@/lib/trip/clock";
+import { SNAP_INPUT } from "@/components/AiAdd";
 
 export default async function TripHome({ params }: { params: Promise<{ tripId: string }> }) {
   const { tripId } = await params;
@@ -17,6 +18,7 @@ export default async function TripHome({ params }: { params: Promise<{ tripId: s
   const open = b.decisions.filter(d => d.status !== "confirmed"); const checks = healthChecks(b, day, t, locale);
   const total = dayCount(b.trip); const dayInfo = dayL(b.days.find(d => d.day === day), locale);
   const before = day < 1, after = day > total;
+  const canEdit = ["owner", "admin", "traveller"].includes(b.members.find(m => m.user_id === user?.id)?.role || "");
   return (
     <div>
       <div className="mb-4 flex items-start justify-between gap-3">
@@ -27,6 +29,7 @@ export default async function TripHome({ params }: { params: Promise<{ tripId: s
         </div>
         <Link href={`${base}/travellers`}><Avatars people={b.members.map(m => m.profile)} /></Link>
       </div>
+      {!before && !after && canEdit && <label htmlFor={SNAP_INPUT} className="btn btn-teal mb-4 flex w-full cursor-pointer items-center justify-center gap-2 py-4 text-[1.0625rem]">📷 {t("ai.snapBig")}</label>}
 
       <div className="md:grid md:grid-cols-[1.15fr_.85fr] md:gap-6">
         <div>

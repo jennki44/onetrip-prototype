@@ -19,7 +19,10 @@ export async function takeAi(sb: SupabaseClient, kind: "plan" | "day" | "swap" |
  * One structured call to Claude: the answer is parsed against the zod schema.
  * Server-side refusal fallback is on ("default"), so a safety decline is retried on a suitable model automatically.
  */
-export async function aiJson<S extends z.ZodType>(schema: S, system: string, user: string, opts: { effort?: "low" | "medium" | "high"; maxTokens?: number } = {}): Promise<AiResult<z.infer<S>>> {
+/** A photo for Claude to look at (JPEG, already shrunk on the phone). */
+export type AiImage = { data: string; mediaType: "image/jpeg" | "image/png" | "image/webp" };
+
+export async function aiJson<S extends z.ZodType>(schema: S, system: string, user: string, opts: { effort?: "low" | "medium" | "high"; maxTokens?: number; image?: AiImage } = {}): Promise<AiResult<z.infer<S>>> {
   if (!process.env.ANTHROPIC_API_KEY) return { ok: false, error: "not_configured" };
   const client = new Anthropic();
   try {
@@ -29,7 +32,7 @@ export async function aiJson<S extends z.ZodType>(schema: S, system: string, use
       betas: ["server-side-fallback-2026-07-01"],
       fallbacks: "default",
       system,
-      messages: [{ role: "user", content: user }],
+      messages: [{ role: "user", content: opts.image ? [{ type: "image", source: { type: "base64", media_type: opts.image.mediaType, data: opts.image.data } }, { type: "text", text: user }] : user }],
       output_config: { format: betaZodOutputFormat(schema), effort: opts.effort ?? "medium" },
     });
     if (res.stop_reason === "refusal") return { ok: false, error: "refused" };

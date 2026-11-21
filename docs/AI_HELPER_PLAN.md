@@ -36,3 +36,14 @@ Two jobs, built together, sharing one place-checking and one limits layer.
 
 ## Not in v1
 Open chat; bookings/tickets; Google Places; offline queue for quick add.
+
+## v2 — one ✨ add screen with photo (interview 22 Nov 2026)
+| Topic | Decision |
+|---|---|
+| Camera access | Big 📷 button on **今日** and **行程** on every trip day, plus 相片 in the + menu |
+| AI on photos | Yes: photo + GPS + time (+ words) → name, type, note, rough cost; counts toward 50 quick adds/trip/day |
+| Screens | **One** ✨ add screen: photo optional, speak/type optional, one suggested card to check and save |
+| Planned match | Ask "Are you at …?" — one tap adds the photo to that activity, or add as a new stop |
+
+Flow: tap 📷 (camera opens) or ✨ (screen opens) → optional photo + optional words → AI card (name, day/time, address + pin, note, cost) → 加入行程.
+Status rule: something happening now (photo just taken / time ≈ now) → 完成; a future stop → 提議.
