@@ -29,7 +29,7 @@ const en = {
     link: "Invite link", code: "Join with code", copy: "Copy", copied: "Link copied", share: "Share link", whatsapp: "WhatsApp", sms: "SMS", email: "Email", qr: "QR code",
     goToTrip: "Go to trip", preview: "Travellers can preview the trip before creating an account.", joined: "Joined", invited: "Invited", owner: "Owner", traveller: "Traveller",
   },
-  join: { title: "Join a trip", sub: "Enter the code your friend shared. You can preview before you join.", preview: "Preview trip", asGuest: "Create account and join", notNow: "Not now" },
+  join: { title: "Join a trip", sub: "Enter the code your friend shared. You can preview before you join.", preview: "Preview trip", asGuest: "Create account and join", notNow: "Not now", finding: "Finding…", otherCode: "Not this trip? Enter another code" },
   home: {
     next: "Next", today: "Today", fullDay: "Full day", decision: "Group decision", allDecisions: "All decisions", money: "Money", details: "Details",
     health: "Trip health", directions: "Directions", travelMode: "Travel Mode", nothingElse: "Nothing else planned today.",
@@ -125,7 +125,7 @@ const zhHant: Dictionary = {
     link: "邀請連結", code: "用代碼加入", copy: "複製", copied: "已複製連結", share: "分享連結", whatsapp: "WhatsApp", sms: "短訊", email: "電郵", qr: "QR 碼",
     goToTrip: "前往行程", preview: "旅伴可以先預覽行程，之後先開帳戶。", joined: "已加入", invited: "已邀請", owner: "擁有者", traveller: "旅伴",
   },
-  join: { title: "加入行程", sub: "輸入朋友分享嘅代碼，加入前可以先預覽。", preview: "預覽行程", asGuest: "建立帳戶並加入", notNow: "暫時唔加" },
+  join: { title: "加入行程", sub: "輸入朋友分享嘅代碼，加入前可以先預覽。", preview: "預覽行程", asGuest: "建立帳戶並加入", notNow: "暫時唔加", finding: "搵緊…", otherCode: "唔係呢個行程？輸入其他代碼" },
   home: {
     next: "下一站", today: "今日", fullDay: "全日行程", decision: "小組決定", allDecisions: "全部決定", money: "錢", details: "詳情",
     health: "行程健康", directions: "路線", travelMode: "旅行模式", nothingElse: "今日冇其他安排。",
