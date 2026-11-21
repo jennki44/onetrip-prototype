@@ -30,6 +30,7 @@ const en = {
     goToTrip: "Go to trip", preview: "Travellers can preview the trip before creating an account.", joined: "Joined", invited: "Invited", owner: "Owner", traveller: "Traveller",
   },
   join: { title: "Join a trip", sub: "Enter the code your friend shared. You can preview before you join.", preview: "Preview trip", asGuest: "Create account and join", notNow: "Not now", finding: "Finding…", otherCode: "Not this trip? Enter another code" },
+  snap: { button: "📷 Snap", title: "Snap to add", name: "Name", namePh: "What is this place?", nearby: "Nearby", when: "Time", where: "Place", today: "Today", locating: "Finding where you are…", noLocation: "Location not available. You can still save.", looking: "Looking up the name…", save: "Add to trip", saving: "Saving…", maybe: "Are you at {name}? (planned {time})", joinIt: "Add photo to this activity", orNew: "Or add as a new activity below", needName: "Give it a name first.", badFile: "Please take a photo (JPEG, PNG or WebP).", day: "Day", cancel: "Cancel", retake: "Retake", added: "Added to the plan." },
   home: {
     next: "Next", today: "Today", fullDay: "Full day", decision: "Group decision", allDecisions: "All decisions", money: "Money", details: "Details",
     health: "Trip health", directions: "Directions", travelMode: "Travel Mode", nothingElse: "Nothing else planned today.",
@@ -126,6 +127,7 @@ const zhHant: Dictionary = {
     goToTrip: "前往行程", preview: "旅伴可以先預覽行程，之後先開帳戶。", joined: "已加入", invited: "已邀請", owner: "擁有者", traveller: "旅伴",
   },
   join: { title: "加入行程", sub: "輸入朋友分享嘅代碼，加入前可以先預覽。", preview: "預覽行程", asGuest: "建立帳戶並加入", notNow: "暫時唔加", finding: "搵緊…", otherCode: "唔係呢個行程？輸入其他代碼" },
+  snap: { button: "📷 影相", title: "影相加活動", name: "名稱", namePh: "呢度係咩地方？", nearby: "附近", when: "時間", where: "地點", today: "今日", locating: "搵緊你喺邊…", noLocation: "攞唔到位置，都可以照樣儲存。", looking: "搵緊地方名…", save: "加入行程", saving: "儲存緊…", maybe: "你係咪喺「{name}」？（原定 {time}）", joinIt: "將相加落呢個活動", orNew: "或者喺下面加做新活動", needName: "請先畀個名。", badFile: "請影一張相（JPEG、PNG 或 WebP）。", day: "日子", cancel: "取消", retake: "重影", added: "已加入行程。" },
   home: {
     next: "下一站", today: "今日", fullDay: "全日行程", decision: "小組決定", allDecisions: "全部決定", money: "錢", details: "詳情",
     health: "行程健康", directions: "路線", travelMode: "旅行模式", nothingElse: "今日冇其他安排。",
