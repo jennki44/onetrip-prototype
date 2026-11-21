@@ -4,7 +4,8 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { supabaseServer } from "@/lib/supabase/server";
 import { loadTrip } from "@/lib/trip/load";
-import { dayLabel, fmtTime, place } from "@/lib/trip/derive";
+import { dayLabel, fmtTime, itemNote, itemTitle, place } from "@/lib/trip/derive";
+import { getLocale } from "@/lib/i18n/server";
 import { toMinor } from "@/lib/money";
 import { geocodeAny } from "@/lib/geocode";
 
@@ -34,8 +35,13 @@ export async function saveActivity(form: FormData) {
       await sb.from("places").update(patch).eq("id", pl.id); pl = { ...pl, ...patch };
     } else if (!pl) itemAddress = p.address || null;
   }
+  // The form shows name and note in the viewer's language. Untouched → keep both languages as they were;
+  // changed → the new text becomes the name for everyone and the old translation is dropped.
+  const locale = await getLocale(); const prev = p.itemId ? b.items.find(x => x.id === p.itemId) : undefined;
+  const titleCols = prev && p.title === itemTitle(prev, locale) ? {} : { title: p.title, title_zh: null };
+  const noteCols = prev && (p.note || "") === (itemNote(prev, locale) || "") ? {} : { note: p.note || null, note_zh: null };
   const cost = p.cost ? toMinor(Number(String(p.cost).replace(/[^\d.]/g, "")) || 0, b.trip.base_currency) : null;
-  const row = { title: p.title, day: p.day, start_time: p.start, end_time: p.end || null, place_id: pl?.id || null, emoji: pl?.emoji || "📍", category: pl ? (pl.type === "restaurant" ? "food" : pl.type === "hotel" ? "stay" : pl.type) : "activity", status: p.status, participant_ids: p.people, cost_minor: cost, address: itemAddress, note: p.note || null, photo_url: (p.itemId && b.items.find(x => x.id === p.itemId)?.photo_url?.startsWith("doc:") ? b.items.find(x => x.id === p.itemId)!.photo_url : pl?.photo_url) || null, travel_min: pl?.from_hotel_min ? Math.max(5, Math.round(pl.from_hotel_min * 0.7)) : null };
+  const row = { ...titleCols, ...noteCols, day: p.day, start_time: p.start, end_time: p.end || null, place_id: pl?.id || null, emoji: pl?.emoji || "📍", category: pl ? (pl.type === "restaurant" ? "food" : pl.type === "hotel" ? "stay" : pl.type) : "activity", status: p.status, participant_ids: p.people, cost_minor: cost, address: itemAddress, photo_url: (p.itemId && b.items.find(x => x.id === p.itemId)?.photo_url?.startsWith("doc:") ? b.items.find(x => x.id === p.itemId)!.photo_url : pl?.photo_url) || null, travel_min: pl?.from_hotel_min ? Math.max(5, Math.round(pl.from_hotel_min * 0.7)) : null };
   let id = p.itemId;
   if (id) { const old = b.items.find(i => i.id === id); await sb.from("itinerary_items").update({ ...row, ...(p.booking && old?.booking !== "booked" ? { booking: p.booking } : {}), updated_at: new Date().toISOString() }).eq("id", id); await sb.from("activity_log").insert({ trip_id: p.tripId, user_id: user.id, text: old && old.start_time.slice(0, 5) !== p.start ? `Changed ${p.title} from ${fmtTime(old.start_time.slice(0, 5))} to ${fmtTime(p.start)}.` : `Edited ${p.title}.` }); }
   else { const { data } = await sb.from("itinerary_items").insert({ ...row, trip_id: p.tripId, booking: p.booking || "none", created_by: user.id }).select("id").single(); id = data?.id; await sb.from("activity_log").insert({ trip_id: p.tripId, user_id: user.id, text: `Added ${p.title} to ${dayLabel(b.trip, p.day)}.` }); await sb.from("notifications").insert({ trip_id: p.tripId, icon: "📍", text: `${b.members.find(m => m.user_id === user.id)?.profile.name || "Someone"} added ${p.title} to ${dayLabel(b.trip, p.day)}.`, link: { screen: "item", id } }); }

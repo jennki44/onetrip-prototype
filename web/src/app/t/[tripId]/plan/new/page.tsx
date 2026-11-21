@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { loadTrip } from "@/lib/trip/load";
 import { getT } from "@/lib/i18n/server";
-import { dayCount, dayLabel } from "@/lib/trip/derive";
+import { dayCount, dayLabel, itemNote, itemTitle } from "@/lib/trip/derive";
 import { deleteActivity, saveActivity } from "../actions";
 import { ConfirmButton } from "@/components/ConfirmButton";
 import { PlacePicker } from "@/components/PlacePicker";
@@ -12,7 +12,8 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 export default async function NewActivity({ params, searchParams }: { params: Promise<{ tripId: string }>; searchParams: Promise<{ day?: string; place?: string; edit?: string }> }) {
   const { tripId } = await params; const sp = await searchParams; const [b, { t, locale }] = await Promise.all([loadTrip(tripId), getT()]); if (!b) notFound(); const base = `/t/${tripId}`;
   const edit = sp.edit ? b.items.find(i => i.id === sp.edit) : null; const pl = sp.place ? b.places.find(p => p.id === sp.place) : null;
-  const i = edit || { title: pl?.name || "", day: Number(sp.day) || 1, start_time: "18:00", end_time: "19:30", place_id: pl?.id || "", participant_ids: b.members.map(m => m.user_id), cost_minor: null, status: "proposed", note: "" };
+  // Editing shows the name and note as they appear in this language (the Chinese translation in 繁中), so what you see is what you change.
+  const i = edit ? { ...edit, title: itemTitle(edit, locale), note: itemNote(edit, locale) } : { title: pl?.name || "", day: Number(sp.day) || 1, start_time: "18:00", end_time: "19:30", place_id: pl?.id || "", participant_ids: b.members.map(m => m.user_id), cost_minor: null, status: "proposed", note: "" };
   return (
     <div className="mx-auto max-w-[560px]"><Link href={edit ? `${base}/plan/${edit.id}` : `${base}/plan`} className="btn btn-sm mb-3">‹ {t("common.back")}</Link><h1 className="mb-4 text-[1.75rem]">{edit ? t("ui.editActivity") : t("plan.addActivity").replace("+ ", "")}</h1>
       <form action={saveActivity} className="flex flex-col gap-3">
@@ -26,7 +27,7 @@ export default async function NewActivity({ params, searchParams }: { params: Pr
         <Field label={t("money.notes")}><textarea name="note" maxLength={500} defaultValue={i.note || ""} className="input min-h-20" placeholder={t("ui.noteHint")} /></Field>
         <button className="btn btn-sun w-full py-4 text-[1rem]">{edit ? t("common.save") : t("ui.addToTrip")}</button>
       </form>
-      {edit && <form action={deleteActivity} className="mt-6 text-center"><input type="hidden" name="tripId" value={tripId} /><input type="hidden" name="itemId" value={edit.id} /><ConfirmButton message={t("item.deleteConfirm", { name: edit.title })} className="btn btn-sm text-bad">🗑️ {t("item.deleteActivity")}</ConfirmButton></form>}
+      {edit && <form action={deleteActivity} className="mt-6 text-center"><input type="hidden" name="tripId" value={tripId} /><input type="hidden" name="itemId" value={edit.id} /><ConfirmButton message={t("item.deleteConfirm", { name: i.title })} className="btn btn-sm text-bad">🗑️ {t("item.deleteActivity")}</ConfirmButton></form>}
     </div>
   );
 }
