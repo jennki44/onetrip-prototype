@@ -10,23 +10,26 @@ export const loadTrip = cache(async (tripId: string): Promise<TripBundle | null>
   const q = <T,>(table: string, order?: string) => { let r = sb.from(table).select("*").eq("trip_id", tripId); if (order) r = r.order(order); return r as unknown as Promise<{ data: T[] | null }>; };
   type TripRow = TripBundle["trip"];
   const ratesP = loadRates();
-  const [trip, days, members, places, items, bookings, decisions, options, votes, expenses, shares, settlements, notifications, activity, notes, documents] = await Promise.all([
+  // Follow-up lookups start as soon as the rows they need arrive, instead of after every query has finished.
+  const membersP = q<TripMember>("trip_members");
+  const profilesP = membersP.then(m => { const ids = (m.data || []).map(x => x.user_id); return ids.length ? (sb.from("profiles").select("*").in("id", ids) as unknown as Promise<{ data: Profile[] | null }>) : { data: [] as Profile[] }; });
+  const documentsP = q<TripBundle["documents"][number]>("documents", "created_at");
+  // Activity photos live in the private documents bucket; one batched call turns them into links that last an hour.
+  const photosP = documentsP.then(async d => {
+    const photoDocs = (d.data || []).filter(x => x.linked_type === "item" && x.linked_id && x.storage_path && x.category === "Photos").sort((x, y) => x.created_at.localeCompare(y.created_at)).slice(0, 400);
+    const signed = photoDocs.length ? (await sb.storage.from("documents").createSignedUrls(photoDocs.map(x => x.storage_path as string), 3600)).data || [] : [];
+    return { photoDocs, signed };
+  });
+  const [trip, days, members, places, items, bookings, decisions, options, votes, expenses, shares, settlements, notifications, activity, notes, documents, { data: profiles }, { photoDocs, signed }] = await Promise.all([
     sb.from("trips").select("*").eq("id", tripId).maybeSingle() as unknown as Promise<{ data: TripRow | null }>,
-    q<TripBundle["days"][number]>("trip_days", "day"), q<TripMember>("trip_members"), q<TripBundle["places"][number]>("places", "name"),
+    q<TripBundle["days"][number]>("trip_days", "day"), membersP, q<TripBundle["places"][number]>("places", "name"),
     q<TripBundle["items"][number]>("itinerary_items", "start_time"), q<TripBundle["bookings"][number]>("bookings", "date"), q<TripBundle["decisions"][number]>("decisions", "created_at"),
     q<TripBundle["options"][number]>("decision_options", "sort"), q<TripBundle["votes"][number]>("votes"), q<TripBundle["expenses"][number]>("expenses", "date"),
     q<TripBundle["shares"][number]>("expense_shares"), q<TripBundle["settlements"][number]>("settlements", "date"), q<TripBundle["notifications"][number]>("notifications", "created_at"),
-    q<TripBundle["activity"][number]>("activity_log", "created_at"), q<TripBundle["notes"][number]>("notes", "created_at"), q<TripBundle["documents"][number]>("documents", "created_at"),
+    q<TripBundle["activity"][number]>("activity_log", "created_at"), q<TripBundle["notes"][number]>("notes", "created_at"), documentsP, profilesP, photosP,
   ]);
   setRates(await ratesP);
   if (!trip.data) return null;
-  const ids = (members.data || []).map(m => m.user_id);
-  // Activity photos live in the private documents bucket; one batched call turns them into links that last an hour.
-  const photoDocs = (documents.data || []).filter(d => d.linked_type === "item" && d.linked_id && d.storage_path && d.category === "Photos").sort((x, y) => x.created_at.localeCompare(y.created_at)).slice(0, 400);
-  const [{ data: profiles }, signed] = await Promise.all([
-    sb.from("profiles").select("*").in("id", ids) as unknown as Promise<{ data: Profile[] | null }>,
-    photoDocs.length ? sb.storage.from("documents").createSignedUrls(photoDocs.map(d => d.storage_path as string), 3600).then(r => r.data || []) : Promise.resolve([]),
-  ]);
   const itemPhotos: Record<string, ItemPhoto[]> = {};
   photoDocs.forEach((d, k) => { const url = signed[k]?.signedUrl; if (url) (itemPhotos[d.linked_id as string] ||= []).push({ id: d.id, url, name: d.name, added_by: d.added_by, created_at: d.created_at }); });
   const pmap = new Map((profiles || []).map(p => [p.id, p]));

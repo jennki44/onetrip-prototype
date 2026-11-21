@@ -26,6 +26,9 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // Keep a visited trip screen in the browser for 30s so hopping between tabs doesn't refetch it.
+  // Saving anything (server actions call revalidatePath) clears this cache, so your own edits show at once.
+  experimental: { staleTimes: { dynamic: 30 } },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "*.supabase.co" },
