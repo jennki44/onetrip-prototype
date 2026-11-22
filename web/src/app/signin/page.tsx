@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/supabase/server";
 import { getT } from "@/lib/i18n/server";
-import { sendMagicLink, sendPasswordReset, signInDemo, signInWithPassword, signUpWithPassword } from "./actions";
+import { sendMagicLink, sendPasswordReset, signInDemo, signInWithPassword, signUpWithPassword, verifyCode } from "./actions";
 import { DEMO_USERS } from "@/lib/demo";
 import { safeNext } from "@/lib/security/safeNext";
 import { Logo } from "@/components/Logo";
@@ -19,7 +19,7 @@ export default async function SignIn({ searchParams }: { searchParams: Promise<{
   const mode: Mode = sp.mode === "password" || sp.mode === "signup" || sp.mode === "forgot" ? sp.mode : "magic";
   const next = safeNext(sp.next); const q = (m: Mode) => `/signin?mode=${m}&next=${encodeURIComponent(next)}`;
   const email = sp.email && sp.email.length < 200 ? sp.email : "";
-  const error = sp.error === "exists" ? t("auth.exists") : sp.error === "link" ? t("auth.linkFail") : sp.error;
+  const error = sp.error === "exists" ? t("auth.exists") : sp.error === "link" ? t("auth.linkFail") : sp.error === "code" ? t("auth.codeWrong") : sp.error;
   const joining = next.startsWith("/join");
   const emailField = <label className="text-[0.85rem] font-extrabold text-ink-2">{t("auth.email")}<input name="email" type="email" required autoComplete="email" inputMode="email" defaultValue={email} className="input mt-1" placeholder="you@example.com" /></label>;
   return (
@@ -35,7 +35,18 @@ export default async function SignIn({ searchParams }: { searchParams: Promise<{
       {joining && <p className="mt-3 rounded-2xl bg-sun-soft p-3 font-bold text-ink">🧳 {t("auth.joinFirst")}</p>}
       <p className="mt-2 text-[0.9rem] text-ink-2">{mode === "signup" ? t("auth.createSub") : mode === "magic" ? t("auth.magicHint") : mode === "password" ? t("auth.passwordHint") : ""}</p>
 
-      {mode === "magic" && (sp.sent === "1" ? <div className="mt-4 rounded-2xl bg-good-soft p-4">✉️ {t("auth.sent")}</div> : (
+      {mode === "magic" && (sp.sent === "1" && email ? (
+        <div className="mt-4 flex flex-col gap-3">
+          <div className="rounded-2xl bg-good-soft p-4">✉️ {t("auth.codeSent", { email })}</div>
+          <form action={verifyCode} className="flex flex-col gap-3">
+            <input type="hidden" name="next" value={next} /><input type="hidden" name="email" value={email} />
+            <label className="text-[0.85rem] font-extrabold text-ink-2">{t("auth.codeLabel")}<input name="token" required inputMode="numeric" autoComplete="one-time-code" pattern="[0-9 ]{6,12}" maxLength={12} autoFocus className="input mt-1 text-center font-mono text-[1.75rem] tracking-[.4em]" placeholder="000000" /></label>
+            <button className="btn btn-teal w-full py-4">{t("auth.verify")}</button>
+          </form>
+          <form action={sendMagicLink} className="flex items-center justify-between gap-2 text-[0.875rem] text-ink-2"><input type="hidden" name="next" value={next} /><input type="hidden" name="email" value={email} /><span>{t("auth.orLink")}</span><button className="btn btn-sm">{t("auth.resend")}</button></form>
+          <Link href={q("magic")} className="text-center text-[0.8125rem] font-bold text-ink-3 underline underline-offset-4">{t("auth.otherEmail")}</Link>
+        </div>
+      ) : sp.sent === "1" ? <div className="mt-4 rounded-2xl bg-good-soft p-4">✉️ {t("auth.sent")}</div> : (
         <form action={sendMagicLink} className="mt-4 flex flex-col gap-3">
           <input type="hidden" name="next" value={next} />{emailField}
           <button className="btn btn-teal w-full py-4">{t("auth.magic")}</button>

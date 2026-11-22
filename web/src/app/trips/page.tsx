@@ -5,6 +5,7 @@ import { dateRange } from "@/lib/trip/derive";
 import { LangSwitch } from "@/components/LangSwitch";
 import { Logo } from "@/components/Logo";
 import { UserMenu } from "@/components/UserMenu";
+import { InstallTip } from "@/components/InstallTip";
 import { currentUser, supabaseServer } from "@/lib/supabase/server";
 import type { Profile } from "@/lib/supabase/types";
 
@@ -14,6 +15,16 @@ export default async function Trips() {
   return (
     <div className="mx-auto w-full max-w-[640px] px-5 pt-8">
       <div className="mb-4 flex items-center justify-between"><Logo size={40} href={null} /><div className="flex items-center gap-2"><LangSwitch />{profile && <UserMenu profile={profile} next="/trips" />}</div></div>
+      {!trips.length ? (
+        // A brand-new traveller: three clear ways to start, no tutorial.
+        <div className="flex flex-col gap-3">
+          <h1 className="text-[1.75rem]">{t("welcomeNew.title", { name: profile?.name || "" }).trim()}</h1><p className="-mt-2 text-ink-2">{t("welcomeNew.sub")}</p>
+          <Link href="/new/ai" className="card flex items-center gap-3 border-2 border-teal p-4"><span className="text-[2rem]">✨</span><span className="flex-1"><b className="block text-[1.0625rem]">{t("ai.planTitle")}</b><span className="text-[0.875rem] text-ink-2">{t("ai.planCta")}</span></span><span className="text-teal">›</span></Link>
+          <Link href="/new" className="card flex items-center gap-3 p-4"><span className="text-[2rem]">🧳</span><span className="flex-1"><b className="block text-[1.0625rem]">{t("welcomeNew.create")}</b><span className="text-[0.875rem] text-ink-2">{t("welcomeNew.createSub")}</span></span><span className="text-ink-3">›</span></Link>
+          <Link href="/join" className="card flex items-center gap-3 p-4"><span className="text-[2rem]">🎟️</span><span className="flex-1"><b className="block text-[1.0625rem]">{t("welcomeNew.join")}</b><span className="text-[0.875rem] text-ink-2">{t("welcomeNew.joinSub")}</span></span><span className="text-ink-3">›</span></Link>
+          <InstallTip />
+        </div>
+      ) : <>
       <h1 className="mb-4 text-[1.75rem]">{t("trips.title")}</h1>
       <div className="flex flex-col gap-3">
         {trips.map(({ trip, role }) => (
@@ -23,9 +34,10 @@ export default async function Trips() {
             <span className="text-ink-3">›</span>
           </Link>
         ))}
-        {!trips.length && <div className="card text-center text-ink-2">{t("trips.empty")}</div>}
       </div>
       <div className="mt-5 flex gap-3"><Link href="/new" className="btn btn-sun flex-1">{t("welcome.create")}</Link><Link href="/join" className="btn btn-outline flex-1">{t("welcome.join")}</Link></div>
+      <div className="mt-5"><InstallTip /></div>
+      </>}
     </div>
   );
 }

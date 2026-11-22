@@ -13,8 +13,8 @@ export const AI_PHOTO_INPUT = "ai-photo";
 export const PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
 
 // The browser's built-in speech-to-text (Chrome/Android, recent iPhones). Typed loosely: it is not in the standard DOM types.
-type Recog = { lang: string; interimResults: boolean; continuous: boolean; start(): void; stop(): void; onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null; onend: (() => void) | null; onerror: (() => void) | null };
-const getRecog = (): (new () => Recog) | null => { const w = globalThis as unknown as { SpeechRecognition?: new () => Recog; webkitSpeechRecognition?: new () => Recog }; return w.SpeechRecognition || w.webkitSpeechRecognition || null; };
+export type Recog = { lang: string; interimResults: boolean; continuous: boolean; start(): void; stop(): void; onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null; onend: (() => void) | null; onerror: (() => void) | null };
+export const getRecog = (): (new () => Recog) | null => { const w = globalThis as unknown as { SpeechRecognition?: new () => Recog; webkitSpeechRecognition?: new () => Recog }; return w.SpeechRecognition || w.webkitSpeechRecognition || null; };
 
 /** Resize to a JPEG: max 1024px for the AI to read, max 1600px for the trip album. Null if the browser can't decode it (e.g. HEIC on some phones). */
 export async function toJpeg(f: File, max: number): Promise<Blob | null> {
@@ -128,6 +128,7 @@ export function AiAdd({ tripId, open, photo, onClose, onPhoto }: { tripId: strin
 
         {!draft && !working && (<>
           <p className="text-ink-2">{photo ? t("ai.photoWordsHint") : t("ai.quickHint")}</p>
+          {!photo && <a href={`/t/${tripId}/plan/new`} onClick={close} className="-mt-2 self-start text-[0.875rem] font-bold text-ink-2 underline underline-offset-4">{t("ai.manualForm")}</a>}
           <textarea value={text} onChange={e => setText(e.target.value)} maxLength={300} rows={photo ? 2 : 3} autoFocus={!photo} className="input text-[1.125rem]" placeholder={photo ? t("ai.photoWordsPh") : t("ai.quickPh")} />
           <div className="flex gap-2">
             {canSpeak && <button type="button" onClick={speak} className={`btn flex-1 py-4 text-[1.0625rem] ${listening ? "animate-pulse bg-coral text-white" : ""}`} aria-pressed={listening}>🎤 {listening ? t("ai.listening") : t("ai.speak")}</button>}

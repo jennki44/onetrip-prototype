@@ -8,8 +8,9 @@ import { dayCount, dayDate, dayL, dayLabel, fmtTime, inCurrency, itemNote, itemT
 import { Avatars, PageHead, Pill } from "@/components/ui";
 import { SNAP_INPUT } from "@/components/AiAdd";
 import { AiQuickButton } from "@/components/AiQuickButton";
+import { ReorderDay } from "@/components/ReorderDay";
 
-export default async function Plan({ params, searchParams }: { params: Promise<{ tripId: string }>; searchParams: Promise<{ day?: string; view?: string; removed?: string }> }) {
+export default async function Plan({ params, searchParams }: { params: Promise<{ tripId: string }>; searchParams: Promise<{ day?: string; view?: string; removed?: string; sort?: string }> }) {
   const { tripId } = await params; const sp = await searchParams;
   const [b, { t, locale }, user] = await Promise.all([loadTrip(tripId), getT(), currentUser()]);
   if (!b) notFound();
@@ -45,8 +46,8 @@ export default async function Plan({ params, searchParams }: { params: Promise<{
             {info && banner && <div className="relative mt-3 overflow-hidden rounded-[28px]"><img src={banner} alt="" className="h-[170px] w-full object-cover" />{canEdit && <Link href={`${base}/plan/day?day=${day}`} aria-label={t("dayEdit.edit")} className="absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-[rgba(255,255,255,.9)] text-[1.1rem] shadow-card">✏️</Link>}<div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[rgba(10,16,20,.82)] to-transparent px-4 pb-3.5 pt-10 text-white"><div className="eyebrow text-white/85">{t("ui.dayN", { n: day })}{info.theme ? ` · ${info.theme}` : ""}</div><div className="font-display text-[1.125rem] font-bold">{dayLabel(b.trip, day, locale, true)}</div><div className="text-[0.7813rem] text-white/85">{info.stay ? `${t("plan.stay")} ${info.stay}` : ""}{info.drive ? ` · ${t("plan.driving")} ${info.drive}` : ""}</div></div></div>}
             {!banner && (canEdit ? <Link href={`${base}/plan/day?day=${day}`} className="mt-3 flex items-center gap-3 rounded-[22px] border-2 border-dashed border-teal bg-teal-soft/40 px-4 py-3.5 font-extrabold text-teal-text"><span className="text-[1.6rem]">🖼️</span><span className="flex-1"><span className="block">{t("dayEdit.add")}</span><span className="block text-[0.8125rem] font-semibold text-ink-2">{dayLabel(b.trip, day, locale, true)}{info?.theme ? ` · ${info.theme}` : ""}</span></span><span>›</span></Link> : <div className="mt-3 font-display text-[1.125rem] font-bold">{dayLabel(b.trip, day, locale, true)}{info?.theme ? ` · ${info.theme}` : ""}</div>)}
             {info?.rule && <div className="mt-3 flex gap-2 rounded-xl bg-warn-soft p-3 text-[0.875rem]">📌<span>{info.rule}</span></div>}
-            <div className="my-3 flex items-center justify-between"><span className="text-[0.7813rem] text-ink-3">{t("plan.plans", { n: items.length })} · {inCurrency(b, items.reduce((a, i) => a + (i.cost_minor || 0), 0), rc)}{conflicts.size ? ` · ${conflicts.size} ⚠️` : ""}</span><div className="flex gap-2">{canEdit && <AiQuickButton />}<Link href={`${base}/plan/new?day=${day}`} className="btn btn-sun btn-sm">{t("plan.addActivity")}</Link></div></div>
-            {items.length ? (
+            <div className="my-3 flex items-center justify-between"><span className="text-[0.7813rem] text-ink-3">{t("plan.plans", { n: items.length })} · {inCurrency(b, items.reduce((a, i) => a + (i.cost_minor || 0), 0), rc)}{conflicts.size ? ` · ${conflicts.size} ⚠️` : ""}</span><div className="flex gap-2">{canEdit && items.length > 1 && (sp.sort === "1" ? <Link href={`${base}/plan?day=${day}`} className="btn btn-teal btn-sm">✓ {t("reorder.done")}</Link> : <Link href={`${base}/plan?day=${day}&sort=1`} className="btn btn-sm">↕️ {t("reorder.button")}</Link>)}{canEdit && sp.sort !== "1" && <AiQuickButton className="btn btn-sun btn-sm" label={t("plan.addActivity")} />}</div></div>
+            {canEdit && sp.sort === "1" && items.length > 1 ? <ReorderDay key={items.map(i => i.id + i.start_time + (i.end_time || "")).join()} tripId={tripId} day={day} items={items.map(i => ({ id: i.id, title: itemTitle(i, locale), emoji: i.emoji, start: i.start_time.slice(0, 5), end: i.end_time ? i.end_time.slice(0, 5) : null }))} /> : items.length ? (
               <div className="relative pl-[62px] before:absolute before:bottom-2 before:left-[52px] before:top-2 before:w-0.5 before:bg-line">
                 {items.map(i => { const done = day < todayDay || (day === todayDay && minutes(i.end_time || i.start_time) <= nm); const isNow = day === todayDay && minutes(i.start_time) <= nm && minutes(i.end_time || i.start_time) > nm; const pl = place(b, i.place_id); const ph = photoOf(b, i); return (
                   <div key={i.id} className={`relative mb-3 ${done ? "opacity-70" : ""}`}>
@@ -60,7 +61,7 @@ export default async function Plan({ params, searchParams }: { params: Promise<{
                     </Link>
                   </div>); })}
               </div>
-            ) : <div className="py-10 text-center text-ink-2"><div className="text-[2.5rem]">🗓️</div><b className="text-ink">{t("plan.noPlans", { day: dayLabel(b.trip, day, locale) })}</b><p>{t("plan.noPlansSub")}</p>{canEdit && <Link href={`${base}/plan/new?day=${day}`} className="btn btn-sun mt-4 px-8 py-4 text-[1rem]">{t("plan.addActivity")}</Link>}</div>}
+            ) : <div className="py-10 text-center text-ink-2"><div className="text-[2.5rem]">🗓️</div><b className="text-ink">{t("plan.noPlans", { day: dayLabel(b.trip, day, locale) })}</b><p>{t("plan.noPlansSub")}</p>{canEdit && <AiQuickButton className="btn btn-sun mt-4 px-8 py-4 text-[1rem]" label={t("plan.addActivity")} />}</div>}
           </div>
           <div className="hidden md:block"><div className="sticky top-6 card"><div className="eyebrow mb-2">{dayLabel(b.trip, day, locale)}</div>{info?.caption && <p className="text-[0.875rem] text-ink-2">{info.caption}</p>}<div className="mt-3 grid grid-cols-2 gap-2">{items.filter(i => photoOf(b, i)).slice(0, 6).map(i => <img key={i.id} src={photoOf(b, i)!} alt="" className="h-24 w-full rounded-xl object-cover" />)}</div></div></div>
         </div>

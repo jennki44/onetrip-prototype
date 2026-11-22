@@ -40,3 +40,24 @@ export const osmProvider: PlaceProvider = {
 
 /** The provider in use. Swap for a Google Places provider here when one is configured. */
 export function placeProvider(): PlaceProvider { return osmProvider; }
+
+/** Up to `limit` matches for a search, nearest to the trip city first (OpenStreetMap). Used by 📍 收藏地點. */
+export async function searchPlaces(query: string, near: string | null, lang: string, limit = 5): Promise<FoundPlace[]> {
+  const q = query.trim(); if (q.length < 2) return [];
+  const city = near ? near.split(",")[0].trim() : "";
+  const text = city && !q.toLowerCase().includes(city.toLowerCase()) ? `${q}, ${city}` : q;
+  await politeTurn();
+  try {
+    const ctrl = new AbortController(); const timer = setTimeout(() => ctrl.abort(), 8000);
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=${limit}&addressdetails=1&q=${encodeURIComponent(text.slice(0, 200))}`, { headers: { "User-Agent": "OneTRIP/1.0 (family trip planner)", "Accept-Language": lang.startsWith("zh") ? "zh-Hant,zh,en" : "en" }, signal: ctrl.signal, cache: "no-store" });
+    clearTimeout(timer); if (!r.ok) return [];
+    const hits = (await r.json()) as NominatimHit[];
+    return hits.flatMap(hit => {
+      const lat = Number(hit.lat), lng = Number(hit.lon); if (!Number.isFinite(lat) || !Number.isFinite(lng)) return [];
+      const a = hit.address || {}; const area = a.suburb || a.neighbourhood || a.quarter || a.town || a.city_district || a.city || null;
+      const street = [a.house_number, a.road].filter(Boolean).join(" ");
+      const address = [street || null, a.suburb || a.town || a.city || null].filter(Boolean).join(", ") || (hit.display_name ? hit.display_name.split(",").slice(0, 3).join(",").trim() : null);
+      return [{ name: (hit.name || hit.display_name?.split(",")[0] || q).slice(0, 120), lat: Math.round(lat * 1e5) / 1e5, lng: Math.round(lng * 1e5) / 1e5, address: address ? address.slice(0, 160) : null, area: area ? area.slice(0, 60) : null }];
+    });
+  } catch { return []; }
+}

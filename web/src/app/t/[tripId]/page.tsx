@@ -90,7 +90,7 @@ export default async function TripHome({ params }: { params: Promise<{ tripId: s
               {checks.slice(0, 5).map((c, k) => <Link key={k} href={c.link} className="flex items-center gap-3 px-4 py-3"><span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: `var(--${c.tone})` }} /><span className="min-w-0 flex-1 truncate text-[0.9063rem] font-semibold">{c.text}</span><span className="text-ink-3">›</span></Link>)}
             </div>
           </section>
-          {b.notes.length > 0 && <section className="mt-5"><Eyebrow>{t("ui.notes")}</Eyebrow><div className="card divide-y divide-line-2 p-0">{b.notes.map(n => <div key={n.id} className="px-4 py-3 text-[0.9063rem]">📝 {n.text}</div>)}</div></section>}
+          {b.notes.some(n => n.pinned) && <section className="mt-5"><div className="flex items-center justify-between"><Eyebrow>📌 {t("notes.pinned")}</Eyebrow><Link href={`${base}/notes`} className="text-[0.8125rem] font-extrabold text-teal">{t("notes.all", { n: b.notes.length })} ›</Link></div><div className="card divide-y divide-line-2 p-0">{b.notes.filter(n => n.pinned).map(n => <div key={n.id} className="whitespace-pre-wrap px-4 py-3 text-[0.9063rem]">📝 {n.text}</div>)}</div></section>}
         </div>
       </div>
     </div>

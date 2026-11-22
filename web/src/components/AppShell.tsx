@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useT } from "@/lib/i18n/provider";
 import { AiAdd, PHOTO_TYPES, SNAP_INPUT } from "./AiAdd";
 import { PhotoChooser } from "./PhotoChooser";
+import { SavePlace } from "./SavePlace";
 
 /** Any button can open the ✨ quick add sheet by dispatching this event. */
 export const AI_QUICK_EVENT = "onetrip:ai-quick";
@@ -24,12 +25,9 @@ const TABS = [
   { key: "money", path: "/money", color: "#22a35d", ink: "#fff" },
   { key: "more", path: "/more", color: "#7c5cff", ink: "#fff" },
 ];
-const ADD = [
-  ["📍", "place", "/map"], ["📅", "activity", "/plan/new"], ["🏨", "booking", "/inbox"], ["💰", "expense", "/money/new"], ["🧾", "receipt", "/money/scan"],
-  ["📄", "document", "/inbox"], ["🗳", "decision", "/decisions/new"], ["📝", "note", "/notes/new"], ["🎤", "voice", "/money/new?voice=1"], ] as const;
 
 export function AppShell({ tripId, children }: { tripId: string; children: React.ReactNode }) {
-  const path = usePathname(); const { t } = useT(); const [add, setAdd] = useState(false); const [ai, setAi] = useState(false); const [photo, setPhoto] = useState<File | null>(null); const [photoErr, setPhotoErr] = useState(false); const [choosing, setChoosing] = useState<File | null>(null); const [toast, setToast] = useState<string | null>(null);
+  const path = usePathname(); const { t } = useT(); const [add, setAdd] = useState(false); const [ai, setAi] = useState(false); const [savePlace, setSavePlace] = useState(false); const [photo, setPhoto] = useState<File | null>(null); const [photoErr, setPhotoErr] = useState(false); const [choosing, setChoosing] = useState<File | null>(null); const [toast, setToast] = useState<string | null>(null);
   useEffect(() => { if (!toast) return; const id = setTimeout(() => setToast(null), 3500); return () => clearTimeout(id); }, [toast]);
   useEffect(() => { const open = () => { setPhoto(null); setAi(true); }; window.addEventListener(AI_QUICK_EVENT, open); return () => window.removeEventListener(AI_QUICK_EVENT, open); }, []);
   const base = `/t/${tripId}`;
@@ -42,6 +40,7 @@ export function AppShell({ tripId, children }: { tripId: string; children: React
       {photoErr && <div role="alert" onClick={() => setPhotoErr(false)} className="fixed inset-x-4 top-4 z-50 rounded-2xl bg-bad-soft p-3 font-bold text-bad">{t("snap.badFile")}</div>}
       {choosing && <PhotoChooser tripId={tripId} photo={choosing} onClose={() => setChoosing(null)} onNewActivity={f => { setPhoto(f); setAi(true); }} onSaved={setToast} />}
       <AiAdd tripId={tripId} open={ai} photo={photo} onPhoto={setPhoto} onClose={() => { setAi(false); setPhoto(null); }} />
+      {savePlace && <SavePlace tripId={tripId} onClose={() => setSavePlace(false)} onSaved={setToast} />}
       {toast && <div role="status" className="fixed inset-x-4 top-4 z-[60] mx-auto max-w-[520px] rounded-2xl bg-good-soft p-3 text-center font-bold">✅ {toast}</div>}
       <button aria-label={t("nav.add")} onClick={() => setAdd(true)} className="fixed right-4 z-30 flex h-[3.6rem] w-[3.6rem] items-center justify-center rounded-full bg-coral text-[1.9rem] font-light text-white shadow-[0_8px_22px_rgba(255,107,74,.45)] md:right-8" style={{ bottom: "calc(5.4rem + env(safe-area-inset-bottom))" }}>+</button>
       <nav aria-label="Main" className="fixed bottom-0 left-0 right-0 z-20 grid grid-cols-5 items-stretch border-t-2 border-line bg-surface px-1 pt-1.5" style={{ paddingBottom: "calc(0.4rem + env(safe-area-inset-bottom))" }}>
@@ -55,11 +54,16 @@ export function AppShell({ tripId, children }: { tripId: string; children: React
           <div className="w-full max-w-[640px] rounded-t-[28px] bg-surface px-5 pb-8 pt-3" onClick={e => e.stopPropagation()}>
             <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-line" />
             <h2 className="text-[1.25rem]">{t("nav.add")}</h2>
-            <button type="button" onClick={() => { setAdd(false); setPhoto(null); setAi(true); }} className="mt-4 flex w-full items-center gap-3 rounded-2xl bg-sun-soft px-4 py-3.5 text-left font-extrabold text-ink"><span className="text-[1.6rem]">✨</span><span><span className="block">{t("ai.addTitle")}</span><span className="block text-[0.8125rem] font-semibold text-ink-2">{t("ai.addSub")}</span></span></button>
-            <div className="mt-4 grid grid-cols-5 gap-2">
-              {ADD.map(([e, l, p]) => <Link key={l} href={base + p} onClick={() => setAdd(false)} className="flex flex-col items-center gap-1.5 rounded-2xl bg-surface-2 px-1 py-3 text-[0.75rem] font-extrabold text-ink-2"><span className="text-[1.5rem]">{e}</span>{t(`ui.add.${l}`)}</Link>)}
-              {/* Open the camera before closing the menu: a label removed in the same tap never reaches the input. */}
-              <button type="button" onClick={() => { document.getElementById(SNAP_INPUT)?.click(); setAdd(false); }} className="flex flex-col items-center gap-1.5 rounded-2xl bg-surface-2 px-1 py-3 text-[0.75rem] font-extrabold text-ink-2"><span className="text-[1.5rem]">📷</span>{t("ui.add.photo")}</button>
+            {/* Three big jobs people do most on a trip, then four smaller ones. One entry per job. */}
+            <button type="button" onClick={() => { setAdd(false); setPhoto(null); setAi(true); }} className="mt-4 flex w-full items-center gap-3 rounded-2xl bg-sun-soft px-4 py-4 text-left font-extrabold text-ink"><span className="text-[1.8rem]">✨</span><span><span className="block text-[1.0625rem]">{t("ai.addTitle")}</span><span className="block text-[0.8125rem] font-semibold text-ink-2">{t("ai.addSub")}</span></span></button>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              {/* Open the camera before closing the menu: a button removed in the same tap never reaches the input. */}
+              <button type="button" onClick={() => { document.getElementById(SNAP_INPUT)?.click(); setAdd(false); }} className="flex items-center gap-3 rounded-2xl bg-surface-2 px-4 py-4 text-left font-extrabold"><span className="text-[1.6rem]">📷</span><span><span className="block">{t("menu.photo")}</span><span className="block text-[0.75rem] font-semibold text-ink-2">{t("menu.photoSub")}</span></span></button>
+              <Link href={`${base}/money/new`} onClick={() => setAdd(false)} className="flex items-center gap-3 rounded-2xl bg-surface-2 px-4 py-4 font-extrabold"><span className="text-[1.6rem]">💰</span><span><span className="block">{t("menu.expense")}</span><span className="block text-[0.75rem] font-semibold text-ink-2">{t("menu.expenseSub")}</span></span></Link>
+            </div>
+            <div className="mt-3 grid grid-cols-4 gap-2">
+              {([["📄", "docs", `${base}/inbox`], ["🗳", "vote", `${base}/decisions/new`], ["📝", "note", `${base}/notes`]] as const).map(([e, k, href]) => <Link key={k} href={href} onClick={() => setAdd(false)} className="flex flex-col items-center gap-1 rounded-2xl px-1 py-2.5 text-center text-[0.75rem] font-extrabold text-ink-2"><span className="text-[1.4rem]">{e}</span>{t(`menu.${k}`)}</Link>)}
+              <button type="button" onClick={() => { setAdd(false); setSavePlace(true); }} className="flex flex-col items-center gap-1 rounded-2xl px-1 py-2.5 text-center text-[0.75rem] font-extrabold text-ink-2"><span className="text-[1.4rem]">📍</span>{t("menu.place")}</button>
             </div>
           </div>
         </div>

@@ -243,6 +243,15 @@ otp_expiry = 3600
 # sender_name = "Admin"
 
 # Uncomment to customize email template
+# OneTRIP: sign-in emails carry a 6-digit code ({{ .Token }}) plus the link.
+[auth.email.template.magic_link]
+subject = "OneTRIP 登入驗證碼 · Your sign-in code"
+content_path = "./supabase/templates/magic_link.html"
+
+[auth.email.template.confirmation]
+subject = "歡迎加入 OneTRIP · Your OneTRIP code"
+content_path = "./supabase/templates/confirmation.html"
+
 # [auth.email.template.invite]
 # subject = "You have been invited"
 # content_path = "./supabase/templates/invite.html"

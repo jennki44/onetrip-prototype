@@ -27,7 +27,7 @@ export interface ExpenseShare { expense_id: string; trip_id: string; user_id: st
 export interface Settlement { id: string; trip_id: string; from_user: string; to_user: string; amount_minor: number; date: string; note: string | null; status: string; created_by: string | null; created_at: string }
 export interface ActivityLog { id: string; trip_id: string; user_id: string | null; text: string; created_at: string }
 export interface Notification { id: string; trip_id: string; icon: string | null; text: string; link: Record<string, unknown> | null; read_by: string[]; created_at: string }
-export interface Note { id: string; trip_id: string; user_id: string | null; item_id: string | null; text: string; created_at: string }
+export interface Note { id: string; trip_id: string; user_id: string | null; item_id: string | null; text: string; created_at: string; pinned?: boolean }
 
 type Table<Row> = { Row: Row; Insert: Partial<Row>; Update: Partial<Row>; Relationships: [] };
 export interface Database {

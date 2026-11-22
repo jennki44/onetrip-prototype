@@ -17,7 +17,20 @@ export async function sendMagicLink(form: FormData) {
   const sb = await supabaseServer();
   const { error } = await sb.auth.signInWithOtp({ email: parsed.data.email, options: { emailRedirectTo: `${APP()}/auth/callback?next=${encodeURIComponent(next)}` } });
   if (error) redirect(`/signin?error=${encodeURIComponent(error.message)}`);
-  redirect(`/signin?sent=1&next=${encodeURIComponent(next)}`);
+  // The email carries a 6-digit code (typed on this screen) and the same sign-in link as a backup.
+  redirect(`/signin?${new URLSearchParams({ sent: "1", email: parsed.data.email, next })}`);
+}
+
+/** Sign in (or finish creating the account) with the 6-digit code from the email, on the same screen. */
+export async function verifyCode(form: FormData) {
+  const parsed = z.object({ email, token: z.string().trim().regex(/^\d{6,10}$/), next: z.string().optional() }).safeParse({ email: form.get("email"), token: String(form.get("token") || "").replace(/\s/g, ""), next: form.get("next") });
+  const next = safeNext(String(form.get("next") || ""));
+  const again = (err: string) => `/signin?${new URLSearchParams({ sent: "1", email: String(form.get("email") || ""), next, error: err })}`;
+  if (!parsed.success) redirect(again("code"));
+  const sb = await supabaseServer();
+  const { error } = await sb.auth.verifyOtp({ email: parsed.data.email, token: parsed.data.token, type: "email" });
+  if (error) redirect(again("code"));
+  redirect(next);
 }
 
 export async function signInWithPassword(form: FormData) {
