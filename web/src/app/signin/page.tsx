@@ -40,7 +40,7 @@ export default async function SignIn({ searchParams }: { searchParams: Promise<{
           <div className="rounded-2xl bg-good-soft p-4">✉️ {t("auth.codeSent", { email })}</div>
           <form action={verifyCode} className="flex flex-col gap-3">
             <input type="hidden" name="next" value={next} /><input type="hidden" name="email" value={email} />
-            <label className="text-[0.85rem] font-extrabold text-ink-2">{t("auth.codeLabel")}<input name="token" required inputMode="numeric" autoComplete="one-time-code" pattern="[0-9 ]{6,12}" maxLength={12} autoFocus className="input mt-1 text-center font-mono text-[1.75rem] tracking-[.4em]" placeholder="000000" /></label>
+            <label className="text-[0.85rem] font-extrabold text-ink-2">{t("auth.codeLabel")}<input name="token" required inputMode="numeric" autoComplete="one-time-code" pattern="[0-9 ]{6,12}" maxLength={12} autoFocus className="input mt-1 text-center font-mono text-[1.75rem] tracking-[.4em]" placeholder="••••••" /></label>
             <button className="btn btn-teal w-full py-4">{t("auth.verify")}</button>
           </form>
           <form action={sendMagicLink} className="flex items-center justify-between gap-2 text-[0.875rem] text-ink-2"><input type="hidden" name="next" value={next} /><input type="hidden" name="email" value={email} /><span>{t("auth.orLink")}</span><button className="btn btn-sm">{t("auth.resend")}</button></form>

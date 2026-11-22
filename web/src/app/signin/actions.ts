@@ -17,11 +17,11 @@ export async function sendMagicLink(form: FormData) {
   const sb = await supabaseServer();
   const { error } = await sb.auth.signInWithOtp({ email: parsed.data.email, options: { emailRedirectTo: `${APP()}/auth/callback?next=${encodeURIComponent(next)}` } });
   if (error) redirect(`/signin?error=${encodeURIComponent(error.message)}`);
-  // The email carries a 6-digit code (typed on this screen) and the same sign-in link as a backup.
+  // The email carries a one-time code (6–10 digits, set in Supabase; typed on this screen) and the same sign-in link as a backup.
   redirect(`/signin?${new URLSearchParams({ sent: "1", email: parsed.data.email, next })}`);
 }
 
-/** Sign in (or finish creating the account) with the 6-digit code from the email, on the same screen. */
+/** Sign in (or finish creating the account) with the one-time code from the email, on the same screen. */
 export async function verifyCode(form: FormData) {
   const parsed = z.object({ email, token: z.string().trim().regex(/^\d{6,10}$/), next: z.string().optional() }).safeParse({ email: form.get("email"), token: String(form.get("token") || "").replace(/\s/g, ""), next: form.get("next") });
   const next = safeNext(String(form.get("next") || ""));
