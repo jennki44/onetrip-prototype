@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { SpeechBar } from "./SpeechBar";
 import { useRouter } from "next/navigation";
 import { useT } from "@/lib/i18n/provider";
 import { supabaseBrowser } from "@/lib/supabase/client";
@@ -12,9 +13,6 @@ export const SNAP_INPUT = "snap-photo";
 export const AI_PHOTO_INPUT = "ai-photo";
 export const PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
 
-// The browser's built-in speech-to-text (Chrome/Android, recent iPhones). Typed loosely: it is not in the standard DOM types.
-export type Recog = { lang: string; interimResults: boolean; continuous: boolean; start(): void; stop(): void; onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null; onend: (() => void) | null; onerror: (() => void) | null };
-export const getRecog = (): (new () => Recog) | null => { const w = globalThis as unknown as { SpeechRecognition?: new () => Recog; webkitSpeechRecognition?: new () => Recog }; return w.SpeechRecognition || w.webkitSpeechRecognition || null; };
 
 /** Resize to a JPEG: max 1024px for the AI to read, max 1600px for the trip album. Null if the browser can't decode it (e.g. HEIC on some phones). */
 export async function toJpeg(f: File, max: number): Promise<Blob | null> {
@@ -52,7 +50,6 @@ export function AiAdd({ tripId, open, photo, onClose, onPhoto }: { tripId: strin
   const { t, locale } = useT(); const router = useRouter(); const zh = locale.startsWith("zh");
   const [text, setText] = useState(""); const [busy, setBusy] = useState<"" | "locating" | "reading" | "saving">(""); const [err, setErr] = useState<string | null>(null);
   const [draft, setDraft] = useState<QuickDraft | null>(null); const [orig, setOrig] = useState<QuickDraft | null>(null);
-  const [listening, setListening] = useState(false); const recog = useRef<Recog | null>(null);
   const [preview, setPreview] = useState<string | null>(null); const geo = useRef<{ lat: number; lng: number } | null>(null); const shotAt = useRef<Date | null>(null);
   const run = useRef(0);
 
@@ -67,22 +64,13 @@ export function AiAdd({ tripId, open, photo, onClose, onPhoto }: { tripId: strin
   }, [open, photo]);
 
   if (!open) return null;
-  const canSpeak = !!getRecog();
-  const errText = (e: string) => t(`ai.err.${["limit", "not_configured", "refused", "busy"].includes(e) ? e : "failed"}`);
+    const errText = (e: string) => t(`ai.err.${["limit", "not_configured", "refused", "busy"].includes(e) ? e : "failed"}`);
 
-  const close = () => { run.current++; recog.current?.stop(); setText(""); setDraft(null); setOrig(null); setErr(null); setBusy(""); setListening(false); setPreview(null); geo.current = null; onClose(); };
+  const close = () => { run.current++; setText(""); setDraft(null); setOrig(null); setErr(null); setBusy(""); setPreview(null); geo.current = null; onClose(); };
 
-  const speak = () => {
-    const R = getRecog(); if (!R) return;
-    if (listening) { recog.current?.stop(); return; }
-    const r = new R(); r.lang = zh ? "zh-HK" : "en-AU"; r.interimResults = true; r.continuous = false;
-    r.onresult = e => setText(Array.from(e.results).map(x => x[0]?.transcript || "").join(" ").trim());
-    r.onend = () => setListening(false); r.onerror = () => setListening(false);
-    recog.current = r; setListening(true); r.start();
-  };
 
   async function read(token: number, words: string) {
-    setErr(null); setBusy("reading"); recog.current?.stop();
+    setErr(null); setBusy("reading");
     const when = shotAt.current ?? new Date();
     let image: { data: string; mediaType: "image/jpeg" } | null = null;
     if (photo) { const small = await toJpeg(photo, 1024); if (small) image = { data: await b64(small), mediaType: "image/jpeg" }; }
@@ -130,10 +118,8 @@ export function AiAdd({ tripId, open, photo, onClose, onPhoto }: { tripId: strin
           <p className="text-ink-2">{photo ? t("ai.photoWordsHint") : t("ai.quickHint")}</p>
           {!photo && <a href={`/t/${tripId}/plan/new`} onClick={close} className="-mt-2 self-start text-[0.875rem] font-bold text-ink-2 underline underline-offset-4">{t("ai.manualForm")}</a>}
           <textarea value={text} onChange={e => setText(e.target.value)} maxLength={300} rows={photo ? 2 : 3} autoFocus={!photo} className="input text-[1.125rem]" placeholder={photo ? t("ai.photoWordsPh") : t("ai.quickPh")} />
-          <div className="flex gap-2">
-            {canSpeak && <button type="button" onClick={speak} className={`btn flex-1 py-4 text-[1.0625rem] ${listening ? "animate-pulse bg-coral text-white" : ""}`} aria-pressed={listening}>🎤 {listening ? t("ai.listening") : t("ai.speak")}</button>}
-            <button type="button" onClick={() => read(++run.current, text)} disabled={!photo && text.trim().length < 2} className="btn btn-sun flex-1 py-4 text-[1.0625rem] disabled:opacity-60">✨ {t("ai.read")}</button>
-          </div>
+          <SpeechBar onText={setText} />
+          <button type="button" onClick={() => read(++run.current, text)} disabled={!photo && text.trim().length < 2} className="btn btn-sun w-full py-4 text-[1.0625rem] disabled:opacity-60">✨ {t("ai.read")}</button>
         </>)}
 
         {draft && !working && (<>

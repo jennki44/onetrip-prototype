@@ -14,7 +14,7 @@ export default async function More({ params }: { params: Promise<{ tripId: strin
   const rows: [string, string, string, string, number?][] = [
     ["🗳️", t("decisions.title"), open ? t("decisions.openN", { n: open }) : t("decisions.decided"), "/decisions", open], ["✨", t("brain.title"), t("brain.sub").split(".")[0], "/brain"], ["🩺", t("health.title"), "", "/health"], ["📥", t("inbox.title"), t("inbox.sub"), "/inbox"],
     ["🔔", t("more.notifications"), unread ? `${unread}` : "", "/notifications", unread], ["🎟️", t("more.bookings"), `${b.bookings.length}`, "/bookings"], ["📄", t("more.documents"), `${b.documents.length}`, "/documents"], ["👥", t("more.travellers"), `${b.members.length}`, "/travellers"],
-    ["📝", t("notes.title"), b.notes.length ? `${b.notes.length}` : "", "/notes"], ["🕘", t("more.history"), "", "/history"], ["📸", t("more.memories"), "", "/memories"], ["🧭", t("travel.title"), "", "/travel"], ["⚙️", t("more.settings"), "", "/settings"], ["👤", t("account.title"), user?.email || "", `/account?next=${base}/more`], ["💬", t("more.feedback"), "", "/feedback"],
+    ["⭐", t("saved.title"), b.places.filter(p => p.saved).length ? `${b.places.filter(p => p.saved).length}` : "", "/saved"], ["📝", t("notes.title"), b.notes.length ? `${b.notes.length}` : "", "/notes"], ["🕘", t("more.history"), "", "/history"], ["📸", t("more.memories"), "", "/memories"], ["🧭", t("travel.title"), "", "/travel"], ["⚙️", t("more.settings"), "", "/settings"], ["👤", t("account.title"), user?.email || "", `/account?next=${base}/more`], ["💬", t("more.feedback"), "", "/feedback"],
   ];
   return (
     <div className="mx-auto max-w-[640px]">
